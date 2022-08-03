@@ -1,0 +1,384 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  billing-app
+
+  Sample SAM Template for billing-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: python3.9
+    MemorySize: 128
+    Timeout: !Ref FunctionTimeout
+    Handler: function.lambda_handler
+    Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:19'
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:pymysql-layer:1'
+        # - 'arn:aws:lambda:eu-west-1:754084371841:layer:pyjwt-layer:1'
+    Environment:
+        Variables:
+          DB_ENDPOINT: billing-system-rds.cpgiferzxcuv.eu-west-1.rds.amazonaws.com
+          DB_NAME: billappDB
+          SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:billing-database-credentials-Z74qEc      
+    VpcConfig:
+        SecurityGroupIds:
+          - sg-03ef30065e8e1c030
+          - sg-0ee34adee005acbf6
+        SubnetIds:
+          - subnet-02afd2bac133457a9      
+  
+Parameters:
+  MainEngineRole:
+    Type: String
+    Default: arn:aws:iam::754084371841:role/main-engine-lambda-role
+  FunctionTimeout:
+    Type: Number
+    Default: 10
+
+
+Resources:
+  BillingApi:
+    Type: 'AWS::Serverless::Api'
+    Properties:      
+      Name: billing-api-TBD
+      StageName: dev1
+      OpenApiVersion: "3.0.1"
+      DefinitionUri: ./oas.yaml          
+
+  # Services
+  ListServices:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: services/list_services/
+      Description: List Services    
+      FunctionName: services-list-services-TBD      
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /admin/services
+            RestApiId: !Ref BillingApi
+  
+  AddService:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: services/add_service/
+      Description: Add Service
+      FunctionName: services-add-service-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /admin/services
+            RestApiId: !Ref BillingApi 
+   
+  UpdateService:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: services/update_service/
+      Description: Update Service
+      FunctionName: services-update-service-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: PATCH
+            Path: /admin/services/{id}
+            RestApiId: !Ref BillingApi 
+
+  DeleteService:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: services/delete_service/
+      Description: Delete Service
+      FunctionName: services-delete-service-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: DELETE
+            Path: /admin/services/{id}
+            RestApiId: !Ref BillingApi 
+
+  # Accounts
+  ListAccounts:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/list_accounts/
+      Description: List Accounts
+      FunctionName: accounts-list-accounts-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts
+            RestApiId: !Ref BillingApi 
+
+  AddAccount:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/add_account/
+      Description: Add Account
+      FunctionName: accounts-add-account-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /accounts
+            RestApiId: !Ref BillingApi 
+  
+  GetAccount:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/get_account/
+      Description: Get Account
+      FunctionName: accounts-get-account-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/{id}
+            RestApiId: !Ref BillingApi 
+  
+  UpdateAccount:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/update_account/
+      Description: Update Account
+      FunctionName: accounts-update-account-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: PATCH
+            Path: /accounts/{id}
+            RestApiId: !Ref BillingApi 
+
+  DeleteAccount:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/delete_account/
+      Description: Delete Account
+      FunctionName: accounts-delete-account-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: DELETE
+            Path: /accounts/{id}
+            RestApiId: !Ref BillingApi 
+  
+  # Organizations
+  ListOrganizations:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/list_organizations/
+      Description: List Organizations
+      FunctionName: organizations-list-organizations-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations
+            RestApiId: !Ref BillingApi 
+  
+  AddOrganization:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/add_organization/
+      Description: Add Organization
+      FunctionName: organizations-add-organization-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /organizations/
+            RestApiId: !Ref BillingApi 
+  
+  GetOrganization:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/get_organization/
+      Description: Get Organization
+      FunctionName: organizations-get-organization-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/{id}
+            RestApiId: !Ref BillingApi 
+  
+  UpdateOrganization:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/update_organization/
+      Description: update Organization
+      FunctionName: organizations-update-organization-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: PATCH
+            Path: /organizations/{id}
+            RestApiId: !Ref BillingApi 
+  
+  DeleteOrganization:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/delete_organization/
+      Description: Delete Organization
+      FunctionName: organizations-delete-organization-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: DELETE
+            Path: /organizations/{id}
+            RestApiId: !Ref BillingApi 
+
+  # Providers
+  ListProviders:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: providers/list_providers/
+      Description: List Providers
+      FunctionName: providers-list-providers-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /providers
+            RestApiId: !Ref BillingApi 
+
+  # Users
+  ListOrganizationUsers:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: users/list_organization_users
+      Description: List Organization Users
+      FunctionName: users-list-organization-users-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /users
+            RestApiId: !Ref BillingApi   
+  
+  AddUser:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: users/add_user
+      Description: Add User
+      FunctionName: users-add-user-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /users/{sub}
+            RestApiId: !Ref BillingApi   
+            
+  GetUser:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: users/get_user
+      Description: Get User
+      FunctionName: users-get-user-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /users/{sub}
+            RestApiId: !Ref BillingApi    
+  
+  # Service Connections
+  ListServiceConnections:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/list_service_connections/
+      Description: List Account Service Connections
+      FunctionName: accounts-list-service-connections
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /account/{id}/services
+            RestApiId: !Ref BillingApi   
+  
+  AddServiceConnection:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/add_service_connection/
+      Description: Add Service Connection To Account
+      FunctionName: accounts-add-service-connection
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /account/{id}/services
+            RestApiId: !Ref BillingApi  
+  
+  DeleteServiceConnection:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/delete_service_connection/
+      Description: Delete Service Connection To Account
+      FunctionName: accounts-delete-service-connection
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: DELETE
+            Path: /account/{id}/services{sid}
+            RestApiId: !Ref BillingApi  
+  
+  UpdateServiceConnection:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/update_service_connection/
+      Description: Update Service Connection To Account
+      FunctionName: accounts-update-service-connection
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: PATCH
+            Path: /account/{id}/services{sid}
+            RestApiId: !Ref BillingApi  
+ 
