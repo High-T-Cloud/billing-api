@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     # Permission required: Master
-    user_auth = utils.get_user_auth(cursor, event, organization_id=6)
+    user_auth = utils.get_user_auth(cursor, event, organization_id=6, account_id=False)
     if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')        
@@ -19,9 +19,7 @@ def lambda_handler(event, context):
     # merge empty organization with event organization
     for key in new_organization:
         if key in event:
-            new_organization[key] = event[key]
-            
-            
+            new_organization[key] = event[key]                        
     print('--New Organization: ', new_organization)    
 
     cursor.execute('INSERT INTO organizations (name, business_id, phone, emails, address) VALUES (%s, %s, %s, %s, %s)', tuple(new_organization.values()))

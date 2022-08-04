@@ -6,6 +6,8 @@ import utils
 
 def lambda_handler(event, context):
     print('--Event: ', event)
+
+    # Auth required - App User
     
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()

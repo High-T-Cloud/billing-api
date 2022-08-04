@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     # Required permission: Manager
-    user_auth = utils.get_user_auth(cursor, event, organization_id = event['id'])
+    user_auth = utils.get_user_auth(cursor, event, account_id=False)
     if user_auth < 2:
         conn.close()
         raise Exception('err-401: user access denied')
@@ -16,14 +16,14 @@ def lambda_handler(event, context):
     # --Function Logic--
     
     # try to find organization
-    cursor.execute('SELECT * FROM organizations WHERE id=%s', event['id'])
+    cursor.execute('SELECT * FROM organizations WHERE id=%s', event['organization_id'])
     current_organization = cursor.fetchone()    
     print('--current organization: ', current_organization)
         
     # Merge current organization with request organization
     for key in current_organization:
         if key in event:
-            current_organization[key] = event[key]
+            current_organization[key] = event[key]    
             
     # Format JSON values in organization
     if type(current_organization['emails']) == str:

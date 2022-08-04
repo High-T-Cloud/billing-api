@@ -31,6 +31,6 @@ def lambda_handler(event, context):
         users.append(new_user)
     
 
-    
+    conn.close()
     return {'body': users}
     

@@ -6,12 +6,8 @@ def lambda_handler(event, context):
     
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
-    
-    # Role required: Master
-    user_role = utils.get_user_auth(cursor, event, account_id=False, organization_id=6)
-    if int(user_role) != 3:
-        conn.close()
-        raise Exception('err-401: user access denied')
+
+    # Role required - App User
     
     # function logic
     cursor.execute('SELECT * FROM services')

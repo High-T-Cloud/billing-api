@@ -7,14 +7,14 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     # Permission required: Master
-    user_auth = utils.get_user_auth(cursor, event, organization_id=6)
+    user_auth = utils.get_user_auth(cursor, event, organization_id=6, account_id=False)
     if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')  
         
     
     # try to find organization
-    cursor.execute('SELECT * FROM organizations WHERE id=%s', event['id'])
+    cursor.execute('SELECT * FROM organizations WHERE id=%s', event['organization_id'])
 
     query = cursor.fetchone()
     print('--Query: ', query)
@@ -24,7 +24,7 @@ def lambda_handler(event, context):
         raise Exception('err-400: invalid organization id')
     
     # found organization
-    cursor.execute('DELETE FROM organizations WHERE id=%s', event['id'])
+    cursor.execute('DELETE FROM organizations WHERE id=%s', event['organization_id'])
     conn.commit()
     conn.close()
         

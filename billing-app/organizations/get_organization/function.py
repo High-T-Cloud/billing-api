@@ -10,21 +10,18 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     # Special Case - get user's organization
-    if event['id'] == 'USER':    
-        jwt_token = event['Authorization'].split('Bearer ')[1]    
-        user_sub = jwt_decode(jwt_token, options={'verify_signature': False})['sub']
-        fsub = '%' + user_sub + '%'
+    if event['organization_id'] == 'USER':            
+        fsub = '%' + event['user_sub'] + '%'
 
         cursor.execute('SELECT * FROM organizations WHERE connected_users LIKE %s', fsub)        
-    else:
+    else:  # Get organization by id
         # Required permission: Viewer
-        user_auth = utils.get_user_auth(cursor, event, organization_id=event['id']) 
+        user_auth = utils.get_user_auth(cursor, event, account_id=False) 
         print('--auth: ', user_auth)   
         if user_auth < 1:
             conn.close()
             raise Exception('err-401: user access denied')            
-
-        cursor.execute('SELECT * FROM organizations WHERE id = %s', event['id'])        
+        cursor.execute('SELECT * FROM organizations WHERE id = %s', event['organization_id'])        
         
     organization = cursor.fetchone()
     conn.close()
