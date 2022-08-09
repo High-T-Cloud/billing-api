@@ -14,11 +14,8 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-401: user access denied')
 
-    cursor.execute('SELECT * FROM service_connections WHERE account_id = %s', str(event['account_id']))
-    services = cursor.fetchall()
-    if not services:
-        conn.close()
-        raise Exception('err-400: invalid account id')      
+    cursor.execute('SELECT * FROM service_connections WHERE account_id = %s', event['account_id'])
+    services = cursor.fetchall()    
 
     conn.close()
     return {'body': services}

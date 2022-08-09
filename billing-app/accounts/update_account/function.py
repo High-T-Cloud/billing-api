@@ -15,7 +15,7 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # Validate provider exists
-    if 'provider_id' in event:
+    if 'provider_id' in event and event['provider_id'] != '':
         cursor.execute('SELECT id FROM providers WHERE id=%s', event['provider_id'])
         if not cursor.fetchone():
             conn.close()
@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     
     # merge account with event data
     for key in account:
-        if key in event:
+        if key in event and event[key] != '':
             account[key] = event[key]
     
     cursor.execute('UPDATE accounts SET name=%s, account_number=%s, provider_id=%s WHERE id=%s', (account['name'], account['account_number'], account['provider_id'], event['account_id']))

@@ -23,8 +23,9 @@ def lambda_handler(event, context):
 
     # Merge service with event data
     for key in service:
-        if key in event:
+        if key in event and event[key] is not None:
             service[key] = event[key]
+    print('--New service: ', service)
             
     params = (service['description'], service['value'], service['unit'], service['id'])
     cursor.execute('UPDATE service_connections SET description=%s, value=%s, unit=%s WHERE id = %s', params)

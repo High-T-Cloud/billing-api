@@ -1,7 +1,6 @@
 from os import environ
 import utils
 import json
-from jwt import decode as jwt_decode
     
 def lambda_handler(event, context):
     

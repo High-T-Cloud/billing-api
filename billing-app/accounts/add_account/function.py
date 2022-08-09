@@ -29,7 +29,7 @@ def lambda_handler(event, context):
     } 
     # Merge new account with event data
     for key in new_account:
-        if key in event:
+        if key in event and event[key] is not None:
             new_account[key] = event[key]
     new_account['owner_id'] = event['organization_id']
     print('--new acocunt: ', new_account)

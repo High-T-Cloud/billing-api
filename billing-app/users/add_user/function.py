@@ -4,6 +4,7 @@ from os import environ
 import boto3
 
 def lambda_handler(event, context):
+    print('--event: ', event)
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
     
@@ -42,7 +43,9 @@ def lambda_handler(event, context):
     print('--connected users: ', connected_users)
         
     # ** TODO validate role id **
-    connected_users[new_user_sub] = event['role_id']
+    connected_users['role_id'] = 2
+    if 'role_id' in event and event['role_id'] != '':
+        connected_users[new_user_sub] = event['role_id']
     
     users_json = json.dumps(connected_users)
     print('new users json: ', users_json)

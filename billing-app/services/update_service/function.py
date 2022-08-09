@@ -23,7 +23,7 @@ def lambda_handler(event, context):
         raise Exception('err-400: invalid service id')
     
     for key in new_service:        
-        if key in event:
+        if key in event and event[key] is not None:
             new_service[key] = event[key]
     
     # update service

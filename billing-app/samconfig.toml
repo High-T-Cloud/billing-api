@@ -8,5 +8,5 @@ s3_prefix = "sam-billing-stack"
 region = "eu-west-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "MainEngineRole=\"arn:aws:iam::754084371841:role/main-engine-lambda-role\" FunctionTimeout=\"3\""
+parameter_overrides = "MainEngineRole=\"arn:aws:iam::754084371841:role/main-engine-lambda-role\" FunctionTimeout=\"3\" UsersRole=\"arn:aws:iam::754084371841:role/main-engine-users-lambda-role\""
 image_repositories = []

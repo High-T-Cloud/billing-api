@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         
     # Merge current organization with request organization
     for key in current_organization:
-        if key in event:
+        if key in event and event[key] is not None:
             current_organization[key] = event[key]    
             
     # Format JSON values in organization
@@ -36,7 +36,7 @@ def lambda_handler(event, context):
     print('--New organization: ', current_organization)
     
     # update organization in DB
-    cursor.execute('UPDATE organizations SET name=%s, business_id=%s, phone=%s, emails=%s, address=%s, connected_users=%s WHERE id=%s', ( current_organization['name'], current_organization['business_id'], current_organization['phone'], json.dumps(current_organization['emails']), json.dumps(current_organization['address']), json.dumps(current_organization['connected_users']), event['id'] ))
+    cursor.execute('UPDATE organizations SET name=%s, business_id=%s, phone=%s, emails=%s, address=%s, connected_users=%s WHERE id=%s', ( current_organization['name'], current_organization['business_id'], current_organization['phone'], json.dumps(current_organization['emails']), json.dumps(current_organization['address']), json.dumps(current_organization['connected_users']), event['organization_id'] ))
     conn.commit()
     conn.close()
     

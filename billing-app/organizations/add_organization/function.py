@@ -18,7 +18,7 @@ def lambda_handler(event, context):
 
     # merge empty organization with event organization
     for key in new_organization:
-        if key in event:
+        if key in event and event[key] is not None:
             new_organization[key] = event[key]                        
     print('--New Organization: ', new_organization)    
 

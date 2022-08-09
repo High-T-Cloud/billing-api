@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         # Fetch the user
 
         # Get all users in the organization's group and filter to find the right sub    
-        group_name = 'org-' + user_org
+        group_name = 'org-' + str(user_org)
         
         cognito = client('cognito-idp')
         res = cognito.list_users_in_group(UserPoolId = environ['USER_POOL_ID'], GroupName=group_name)

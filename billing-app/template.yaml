@@ -35,6 +35,9 @@ Parameters:
   FunctionTimeout:
     Type: Number
     Default: 10
+  UsersRole:
+    Type: String
+    Default: arn:aws:iam::754084371841:role/main-engine-users-lambda-role
 
 
 Resources:
@@ -212,7 +215,7 @@ Resources:
           Properties:
             Method: POST
             Path: /organizations/
-            RestApiId: !Ref BillingApi 
+            RestApiId: !Ref BillingApi                         
   
   GetOrganization:
     Type: 'AWS::Serverless::Function'
@@ -282,7 +285,10 @@ Resources:
       CodeUri: users/list_organization_users
       Description: List Organization Users
       FunctionName: users-list-organization-users-TBD
-      Role: !Ref MainEngineRole
+      Role: !Ref UsersRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
       Events:
         ApiCall:
           Type: Api
@@ -297,13 +303,17 @@ Resources:
       CodeUri: users/add_user
       Description: Add User
       FunctionName: users-add-user-TBD
-      Role: !Ref MainEngineRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
+          APP_CLIENT_ID: 574ui7l7qnhctaba7nrpuuvb4d
+      Role: !Ref UsersRole
       Events:
         ApiCall:
           Type: Api
           Properties:
             Method: POST
-            Path: /users/{sub}
+            Path: /users
             RestApiId: !Ref BillingApi   
             
   GetUser:
@@ -312,7 +322,10 @@ Resources:
       CodeUri: users/get_user
       Description: Get User
       FunctionName: users-get-user-TBD
-      Role: !Ref MainEngineRole
+      Role: !Ref UsersRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
       Events:
         ApiCall:
           Type: Api
@@ -334,7 +347,7 @@ Resources:
           Type: Api
           Properties:
             Method: GET
-            Path: /account/{id}/services
+            Path: /accounts/{id}/services
             RestApiId: !Ref BillingApi   
   
   AddServiceConnection:
@@ -349,7 +362,7 @@ Resources:
           Type: Api
           Properties:
             Method: POST
-            Path: /account/{id}/services
+            Path: /accounts/{id}/services
             RestApiId: !Ref BillingApi  
   
   DeleteServiceConnection:
@@ -364,7 +377,7 @@ Resources:
           Type: Api
           Properties:
             Method: DELETE
-            Path: /account/{id}/services{sid}
+            Path: /accounts/{id}/services/{sid}
             RestApiId: !Ref BillingApi  
   
   UpdateServiceConnection:
@@ -379,6 +392,6 @@ Resources:
           Type: Api
           Properties:
             Method: PATCH
-            Path: /account/{id}/services{sid}
+            Path: /accounts/{id}/services/{sid}
             RestApiId: !Ref BillingApi  
  

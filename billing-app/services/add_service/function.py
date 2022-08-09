@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     
     # create the new secrive
     for key in new_service:
-        if key in event:
+        if key in event and event[key] is not None:
             new_service[key] = event[key]
     
     cursor.execute('INSERT INTO services (serial, description, value, unit) VALUES (%s,%s,%s,%s)',

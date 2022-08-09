@@ -20,17 +20,12 @@ tags:
 paths:
   /accounts/{id}:
     get:
+      operationId: get_account
       tags:
       - "Accounts"
       summary: "Get Account"
       description: "Get a new single account"
-      parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Organization ID"
-        required: true
-        schema:
-          type: "string"
+      parameters:      
       - name: "provider_info"
         in: "query"
         description: "Whether to add provider name and image source in the response\
@@ -89,24 +84,22 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "{\n    \"id\": \"$input.params('id')\",\n    \"organization_id\"\
-            : \"$input.params('organization_id')\",\n    \"provider_info\": \"$input.params('provider_info')\"\
-            ,\n    \"Authorization\": \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "provider_info": "$input.params('provider_info')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
     delete:
+      operationId: delete_account
       tags:
       - "Accounts"
       summary: "Delete Account"
       description: "Delete an account from organizations"
       parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Organization ID"
-        required: true
-        schema:
-          type: "string"
       - name: "id"
         in: "path"
         description: "Account ID"
@@ -163,9 +156,11 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "{\n    \"id\": \"$input.params('id')\",\n    \"organization_id\"\
-            : \"$input.params('organization_id')\",\n    \"Authorization\": \"$input.params('Authorization')\"\
-            \n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -208,16 +203,12 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
     patch:
+      operationId: update_account
       tags:
       - "Accounts"
       summary: "Update Account"
       description: "Update an account"
-      parameters:
-      - name: "organization_id"
-        in: "query"
-        required: true
-        schema:
-          type: "string"
+      parameters:      
       - name: "id"
         in: "path"
         required: true
@@ -280,11 +271,15 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"id\"\
-            : \"$input.params('id')\",\r\n  \"name\" : \"$inputRoot.name\",\r\n  \"\
-            provider_id\" : \"$inputRoot.provider_id\",\r\n  \"account_number\" :\
-            \ \"$inputRoot.account_number\",\r\n  \"organization_id\": \"$input.params('organization_id')\"\
-            ,\r\n  \"Authorization\": \"$input.params('Authorization')\"\r\n}"
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "provider_id": "$inputRoot.provider_id",
+              "account_number": "$inputRoot.account_number",
+              "name": "$inputRoot.name"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -295,9 +290,7 @@ paths:
       tags:
         - Accounts
       summary: "List Account Services"
-      description: Get a list of services connected an account
-      parameters:
-        - $ref: "#/components/parameters/OrganizationId"
+      description: Get a list of services connected an account      
       responses:
         "200":
           description: A list of `service_connection` objects
@@ -332,7 +325,7 @@ paths:
       x-code-samples:
         - lang: javascript
           source: |
-            fetch($BASE/accounts/6/services?organization_id=10, {
+            fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'}
             })    
       #AWS
@@ -346,9 +339,8 @@ paths:
         requestTemplates:
           application/json: >
             {
-              "id": "$input.params('id')",
-              "organization_id": "$input.params('organization_id')",
-              "Authorization": "$input.params('Authorization')",
+              "account_id": "$input.params('id')",
+              "user_sub": "$context.authorizer.claims.sub"
             }
         responses:
           default:
@@ -362,9 +354,7 @@ paths:
       tags:
         - Accounts
       summary: "Add Account Service"
-      description: Add a new service connection to the account
-      parameters:
-        - $ref: "#/components/parameters/OrganizationId"
+      description: Add a new service connection to the account      
       responses:
         "200":
           description: Success message
@@ -399,7 +389,7 @@ paths:
       x-code-samples:
         - lang: javascript
           source: |
-            fetch($BASE/accounts/6/services?organization_id=10, {
+            fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'POST',
               body: JSON.stringify({value: 12, unit: 'PER'})
@@ -414,10 +404,8 @@ paths:
         requestTemplates:
           application/json: >
             {
-              "id": "$input.params('id')",
-              "sid": "$input.params('sid')",
-              "organization_id": "$input.params('organization_id')",
-              "Authorization": "$input.params('Authorization')",
+              "account_id": "$input.params('id')",                            
+              "user_sub": "$context.authorizer.claims.sub"
             }
         responses:
           default:
@@ -427,15 +415,13 @@ paths:
           err-401:
             statusCode: "401"
 
-  /accounts/services/{sid}:
+  /accounts/{id}/services/{sid}:
     delete:
       operationId: delete_account_service
       tags:
         - Accounts
       summary: "Delete Account Service"
       description: Delete a service connection from the account
-      parameters:
-        - $ref: "#/components/parameters/OrganizationId"
       responses:
         "200":
           description: Success message
@@ -470,7 +456,7 @@ paths:
       x-code-samples:
         - lang: javascript
           source: |
-            fetch($BASE/accounts/6/services?organization_id=10, {
+            fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'DELETE'
             })    
@@ -484,10 +470,9 @@ paths:
         requestTemplates:
           application/json: >
             {
-              "id": "$input.params('id')",
-              "sid": "$input.params('sid')",
-              "organization_id": "$input.params('organization_id')",
-              "Authorization": "$input.params('Authorization')",
+              "account_id": "$input.params('id')",
+              "service_id": "$input.params('sid')",
+              "user_sub": "$context.authorizer.claims.sub"              
             }
         responses:
           default:
@@ -501,9 +486,7 @@ paths:
       tags:
         - Accounts
       summary: "Update Account Service"
-      description: Update an account service connection
-      parameters:
-        - $ref: "#/components/parameters/OrganizationId"
+      description: Update an account service connection      
       responses:
         "200":
           description: Success message
@@ -538,7 +521,7 @@ paths:
       x-code-samples:
         - lang: javascript
           source: |
-            fetch($BASE/accounts/6/services?organization_id=10, {
+            fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'PATCH',
               body: JSON.stringify({value: 12, unit: 'PER'})
@@ -551,12 +534,15 @@ paths:
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         requestTemplates:
-          application/json: >
+          application/json: |
+            #set($inputRoot = $input.path('$'))
             {
-              "id": "$input.params('id')",
-              "sid": "$input.params('sid')",
-              "organization_id": "$input.params('organization_id')",
-              "Authorization": "$input.params('Authorization')",
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "service_id": "$input.params('sid')",
+              "description": "$inputRoot.description",
+              "value": "$inputRoot.value",
+              "unit": "$inputRoot.unit"
             }
         responses:
           default:
@@ -564,11 +550,7 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
           err-401:
-            statusCode: "401"
-
-      
-            
-            
+            statusCode: "401"                           
   
   /users/{sub}:
     get:
@@ -628,9 +610,11 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
-          application/json: "{\n    \"user_sub\": \"$input.params('sub')\",\n    \"\
-            organization_id\": \"$input.params('organization_id')\",\n    \"Authorization\"\
-            : \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "cognito_user": "$input.params('sub')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -713,7 +697,7 @@ paths:
         requestTemplates:
           application/json: >
             {
-              "Authorization": "$input.params('Authorization')"
+              "user_sub": "$context.authorizer.claims.sub"
             }
         responses:
           default:
@@ -770,7 +754,7 @@ paths:
           application/json: |            
               #set($inputRoot = $input.path('$'))
               {
-                "Authorization": "$input.params('Authorization')",
+                "user_sub": "$context.authorizer.claims.sub",
                 "name": "$inputRoot.name",
                 "phone": "$inputRoot.phone",
                 "business_id": "$inputRoot.business_id",
@@ -824,13 +808,14 @@ paths:
         type: "mock"
   /users:
     get:
+      operationId: get_user
       tags:
       - "Users"
       summary: "List Users"
       description: "List all users in organization"
       parameters:
-      - name: "organization_id"
-        in: "query"
+      - name: "sub"
+        in: "path"
         required: true
         schema:
           type: "string"
@@ -874,15 +859,19 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
-          application/json: "{\n    \"organization_id\": \"$input.params('organization_id')\"\
-            ,\n    \"Authorization\": \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('organization_id')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
     post:
+      operationId: add_user
       tags:
       - "Users"
-      summary: "Create Users"
+      summary: "Create User"
       description: "Add a new user to the organization"
       parameters:
       - name: "organization_id"
@@ -943,11 +932,15 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
-          application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"username\"\
-            \ : \"$inputRoot.username\",\r\n  \"password\" : \"$inputRoot.password\"\
-            ,\r\n  \"email\" : \"$inputRoot.email\",\r\n  \"organization_id\": \"\
-            $input.params('organization_id')\",\r\n  \"Authorization\": \"$input.params('Authorization')\"\
-            \r\n}"
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('organization_id')",
+              "username": "$inputRoot.username",
+              "email": "$inputRoot.email",
+              "password": "$inputRoot.password"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1018,8 +1011,11 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
-          application/json: "{\n    \"id\": \"$input.params('id')\",\n    \"Authorization\"\
-            : \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('id')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1074,8 +1070,8 @@ paths:
         requestTemplates:
           application/json: |
             {
-              "id": "$input.params('id')",
-              "Authorization": "$input.params('Authorization')"
+              "organization_id": "$input.params('id')",
+              "user_sub": "$context.authorizer.claims.sub",
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -1169,8 +1165,8 @@ paths:
           application/json: |
             #set($inputRoot = $input.path('$'))
             {              
-              "Authorization": "$input.params('Authorization')",
-              "id": "$input.params('id')",
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('id')",
               "name": "$inputRoot.name",
               "phone": "$inputRoot.phone",
               "business_id": "$inputRoot.business_id",
@@ -1193,13 +1189,6 @@ paths:
       - "Services"
       summary: "List Services"
       description: "List all servies in the app"
-      parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Must be an admin organization"
-        required: true
-        schema:
-          type: "string"
       responses:
         "401":
           description: "Unauthorizard Error Message"
@@ -1241,23 +1230,19 @@ paths:
           err-401:
             statusCode: "401"
         requestTemplates:
-          application/json: "{\n    \"organization_id\": \"$input.params('organization_id')\"\
-            ,\n    \"Authorization\": \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
     post:
+      operationId: add_service
       tags:
       - "Services"
       summary: "Add Service"
-      description: "Create a new service"
-      parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Must be an admin organization"
-        required: true
-        schema:
-          type: "string"
+      description: "Create a new service"  
       requestBody:
         content:
           application/json:
@@ -1312,11 +1297,16 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"serial\"\
-            \ : \"$inputRoot.serial\",\r\n  \"description\" : \"$inputRoot.description\"\
-            ,\r\n  \"value\" : \"$inputRoot.value\",\r\n  \"unit\" : \"$inputRoot.unit\"\
-            ,\r\n  \"organization_id\": \"$input.params('organization_id')\",\r\n\
-            \  \"Authorization\": \"$input.params('Authorization')\"\r\n}"
+          application/json: |
+              #set($inputRoot = $input.path('$'))
+              {
+                "user_sub": "$context.authorizer.claims.sub",
+                "serial"  : "$inputRoot.serial",
+                "description": "$inputRoot.description",
+                "unit"  : "$inputRoot.unit",
+                "value"  : "$inputRoot.value"
+              } 
+
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1473,13 +1463,16 @@ paths:
           'err-401:':
             statusCode: "401"
         requestTemplates:
-          application/json: "{\n    \"organization_id\": \"$input.params('organization_id')\"\
-            ,\n    \"provider_info\": \"$input.params('provider_info')\",\n    \"\
-            Authorization\": \"$input.params('Authorization')\"\n}"
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('organization_id')"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
     post:
+      operationId: add_account
       tags:
       - "Accounts"
       summary: "Create Account"
@@ -1549,7 +1542,7 @@ paths:
           application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"name\"\
             \ : \"$inputRoot.name\",\r\n  \"provider_id\" : \"$inputRoot.provider_id\"\
             ,\r\n  \"account_number\" : \"$inputRoot.account_number\",\r\n  \"organization_id\"\
-            : \"$input.params('organization_id')\",\r\n  \"Authorization\": \"$input.params('Authorization')\"\
+            : \"$input.params('organization_id')\",\r\n  \"user_sub\": \"$context.authorizer.claims.sub\"\
             \r\n}"
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -1588,17 +1581,12 @@ paths:
         type: "mock"
   /admin/services/{id}:
     delete:
+      operationId: delete_service
       tags:
       - "Services"
       summary: "Delete Service"
       description: "Delete a service"
       parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Must be an admin organization"
-        required: true
-        schema:
-          type: "string"
       - name: "id"
         in: "path"
         required: true
@@ -1654,9 +1642,12 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "{\n    \"id\": \"$input.params('id')\",\n    \"organization_id\"\
-            : \"$input.params('organization_id')\",\n    \"Authorization\": \"$input.params('Authorization')\"\
-            \n}"
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "service_id": "$input.params('id')"
+            } 
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1697,17 +1688,12 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
     patch:
+      operationId: update_service
       tags:
       - "Services"
       summary: "Update Service"
       description: "Update an existing service"
       parameters:
-      - name: "organization_id"
-        in: "query"
-        description: "Must be an admin organization"
-        required: true
-        schema:
-          type: "string"
       - name: "id"
         in: "path"
         required: true
@@ -1761,12 +1747,16 @@ paths:
           err-400:
             statusCode: "400"
         requestTemplates:
-          application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"serial\"\
-            \ : \"$inputRoot.serial\",\r\n  \"description\" : \"$inputRoot.description\"\
-            ,\r\n  \"value\" : \"$inputRoot.value\",\r\n  \"unit\" : \"$inputRoot.unit\"\
-            ,\r\n  \"organization_id\": \"$input.params('organization_id')\",\r\n\
-            \  \"id\": \"$input.params('id')\",\r\n  \"Authorization\": \"$input.params('Authorization')\"\
-            \r\n}"
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "service_id": "$input.params('id')",
+              "serial"  : "$inputRoot.serial",
+              "description"  : "$inputRoot.description",
+              "unit"  : "$inputRoot.unit",
+              "value"  : "$inputRoot.value"
+            } 
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1778,7 +1768,7 @@ components:
       description: Organization ID
       required: true
       schema:
-        type: string
+        type: number    
 
   schemas:
     Account:
@@ -1944,9 +1934,9 @@ components:
         name:
           type: "string"
         account_numer:
-          type: "object"
+          type: "string"
         provider_id:
-          type: "object"
+          type: "number"
       example:
         name: "Studio Account"
         account_number: "5196"

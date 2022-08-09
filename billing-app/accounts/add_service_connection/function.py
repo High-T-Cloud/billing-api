@@ -15,9 +15,9 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')    
 
     # Create a new service connection
-    new_service = {'service_id': None, 'id': None, 'description': None, 'value': None, 'unit': None}
+    new_service = {'service_id': None, 'account_id': None, 'description': None, 'value': None, 'unit': None}
     for key in new_service:
-        if key in event:
+        if key in event and event[key] is not None:
             new_service[key] = event[key]
     print('--new service connection: ', new_service.keys())
 
