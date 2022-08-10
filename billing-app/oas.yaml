@@ -403,9 +403,14 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         requestTemplates:
           application/json: >
+            #set($inputRoot = $input.path('$'))
             {
               "account_id": "$input.params('id')",                            
-              "user_sub": "$context.authorizer.claims.sub"
+              "user_sub": "$context.authorizer.claims.sub",
+              "service_id": "$inputRoot.service_id",
+              "description": "$inputRoot.description",
+              "unit": "$inputRoot.unit",
+              "value": "$inputRoot.value"
             }
         responses:
           default:
@@ -554,6 +559,7 @@ paths:
   
   /users/{sub}:
     get:
+      operationId: get_user
       tags:
       - "Users"
       summary: "Get User"
@@ -564,12 +570,7 @@ paths:
         description: "User's unique identifier"
         required: true
         schema:
-          type: "string"
-      - name: "organization_id"
-        in: "query"
-        required: true
-        schema:
-          type: "string"
+          type: "string"      
       responses:
         "400":
           description: "Bad Request Error Message"
@@ -808,17 +809,17 @@ paths:
         type: "mock"
   /users:
     get:
-      operationId: get_user
+      operationId: list_users
       tags:
       - "Users"
       summary: "List Users"
       description: "List all users in organization"
       parameters:
-      - name: "sub"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "organization_id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
       responses:
         "401":
           description: "Unauthorized Error Message"
@@ -1466,7 +1467,8 @@ paths:
           application/json: |
             {
               "user_sub": "$context.authorizer.claims.sub",
-              "organization_id": "$input.params('organization_id')"
+              "organization_id": "$input.params('organization_id')",
+              "provider_info": "$input.params('provider_info')"
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"

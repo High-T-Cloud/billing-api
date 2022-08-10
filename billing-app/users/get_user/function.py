@@ -7,7 +7,7 @@ def lambda_handler(event, context):
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
-    user_sub = event['user_sub']
+    user_sub = event['cognito_user']
     # Special case: get user's self details
     if user_sub == 'USER':
         user_sub = event['cognito_user']

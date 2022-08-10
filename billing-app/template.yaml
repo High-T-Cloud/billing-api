@@ -15,7 +15,6 @@ Globals:
     Layers:
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:19'
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:pymysql-layer:1'
-        # - 'arn:aws:lambda:eu-west-1:754084371841:layer:pyjwt-layer:1'
     Environment:
         Variables:
           DB_ENDPOINT: billing-system-rds.cpgiferzxcuv.eu-west-1.rds.amazonaws.com
@@ -393,5 +392,5 @@ Resources:
           Properties:
             Method: PATCH
             Path: /accounts/{id}/services/{sid}
-            RestApiId: !Ref BillingApi  
+            RestApiId: !Ref BillingApi
  
