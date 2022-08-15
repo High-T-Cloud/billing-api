@@ -43,9 +43,12 @@ def lambda_handler(event, context):
     print('--connected users: ', connected_users)
         
     # ** TODO validate role id **
-    connected_users['role_id'] = 2
+    role_id = 2
     if 'role_id' in event and event['role_id'] != '':
-        connected_users[new_user_sub] = event['role_id']
+        role_id = event['role_id']
+
+    # Add new user to connected_users
+    connected_users[new_user_sub] = role_id
     
     users_json = json.dumps(connected_users)
     print('new users json: ', users_json)

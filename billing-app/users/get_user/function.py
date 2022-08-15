@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     user_sub = event['cognito_user']
     # Special case: get user's self details
     if user_sub == 'USER':
-        user_sub = event['cognito_user']
+        user_sub = event['user_sub']
     else:
         # Auth required: Manager
         
@@ -44,7 +44,7 @@ def lambda_handler(event, context):
         my_user = None
         
         for user in group_users:
-            if user['Attributes'][0]['Value'] == event['user_sub']:
+            if user['Attributes'][0]['Value'] == user_sub:
                 print('--Found user sub--')
                 my_user = {
                     'username': user['Username'],

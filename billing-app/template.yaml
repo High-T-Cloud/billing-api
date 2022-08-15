@@ -43,7 +43,7 @@ Resources:
   BillingApi:
     Type: 'AWS::Serverless::Api'
     Properties:      
-      Name: billing-api-TBD
+      Name: billing-api
       StageName: dev1
       OpenApiVersion: "3.0.1"
       DefinitionUri: ./oas.yaml          
@@ -54,7 +54,7 @@ Resources:
     Properties:
       CodeUri: services/list_services/
       Description: List Services    
-      FunctionName: services-list-services-TBD      
+      FunctionName: services-list-services      
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -69,7 +69,7 @@ Resources:
     Properties:
       CodeUri: services/add_service/
       Description: Add Service
-      FunctionName: services-add-service-TBD
+      FunctionName: services-add-service
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -84,7 +84,7 @@ Resources:
     Properties:
       CodeUri: services/update_service/
       Description: Update Service
-      FunctionName: services-update-service-TBD
+      FunctionName: services-update-service
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -99,7 +99,7 @@ Resources:
     Properties:
       CodeUri: services/delete_service/
       Description: Delete Service
-      FunctionName: services-delete-service-TBD
+      FunctionName: services-delete-service
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -115,7 +115,7 @@ Resources:
     Properties:
       CodeUri: accounts/list_accounts/
       Description: List Accounts
-      FunctionName: accounts-list-accounts-TBD
+      FunctionName: accounts-list-accounts
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -130,7 +130,7 @@ Resources:
     Properties:
       CodeUri: accounts/add_account/
       Description: Add Account
-      FunctionName: accounts-add-account-TBD
+      FunctionName: accounts-add-account
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -145,7 +145,7 @@ Resources:
     Properties:
       CodeUri: accounts/get_account/
       Description: Get Account
-      FunctionName: accounts-get-account-TBD
+      FunctionName: accounts-get-account
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -160,7 +160,7 @@ Resources:
     Properties:
       CodeUri: accounts/update_account/
       Description: Update Account
-      FunctionName: accounts-update-account-TBD
+      FunctionName: accounts-update-account
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -175,7 +175,7 @@ Resources:
     Properties:
       CodeUri: accounts/delete_account/
       Description: Delete Account
-      FunctionName: accounts-delete-account-TBD
+      FunctionName: accounts-delete-account
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -191,7 +191,7 @@ Resources:
     Properties:
       CodeUri: organizations/list_organizations/
       Description: List Organizations
-      FunctionName: organizations-list-organizations-TBD
+      FunctionName: organizations-list-organizations
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -206,7 +206,7 @@ Resources:
     Properties:
       CodeUri: organizations/add_organization/
       Description: Add Organization
-      FunctionName: organizations-add-organization-TBD
+      FunctionName: organizations-add-organization
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -221,7 +221,7 @@ Resources:
     Properties:
       CodeUri: organizations/get_organization/
       Description: Get Organization
-      FunctionName: organizations-get-organization-TBD
+      FunctionName: organizations-get-organization
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -236,7 +236,7 @@ Resources:
     Properties:
       CodeUri: organizations/update_organization/
       Description: update Organization
-      FunctionName: organizations-update-organization-TBD
+      FunctionName: organizations-update-organization
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -251,7 +251,7 @@ Resources:
     Properties:
       CodeUri: organizations/delete_organization/
       Description: Delete Organization
-      FunctionName: organizations-delete-organization-TBD
+      FunctionName: organizations-delete-organization
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -267,7 +267,7 @@ Resources:
     Properties:
       CodeUri: providers/list_providers/
       Description: List Providers
-      FunctionName: providers-list-providers-TBD
+      FunctionName: providers-list-providers
       Role: !Ref MainEngineRole
       Events:
         ApiCall:
@@ -283,7 +283,7 @@ Resources:
     Properties:
       CodeUri: users/list_organization_users
       Description: List Organization Users
-      FunctionName: users-list-organization-users-TBD
+      FunctionName: users-list-organization-users
       Role: !Ref UsersRole
       Environment:
         Variables:
@@ -301,7 +301,7 @@ Resources:
     Properties:
       CodeUri: users/add_user
       Description: Add User
-      FunctionName: users-add-user-TBD
+      FunctionName: users-add-user
       Environment:
         Variables:
           USER_POOL_ID: eu-west-1_O0r17DvOM
@@ -320,7 +320,7 @@ Resources:
     Properties:
       CodeUri: users/get_user
       Description: Get User
-      FunctionName: users-get-user-TBD
+      FunctionName: users-get-user
       Role: !Ref UsersRole
       Environment:
         Variables:
@@ -392,5 +392,23 @@ Resources:
           Properties:
             Method: PATCH
             Path: /accounts/{id}/services/{sid}
+            RestApiId: !Ref BillingApi
+  
+  # Documents
+  CreateInvoice:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: documents/create_invoice/
+      Description: Create An Invoice
+      FunctionName: documents-create-invoice
+      Role: !Ref MainEngineRole
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /documents/invoices
             RestApiId: !Ref BillingApi
  
