@@ -13,7 +13,7 @@ Globals:
     Timeout: !Ref FunctionTimeout
     Handler: function.lambda_handler
     Layers:
-        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:19'
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:25'
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:pymysql-layer:1'
     Environment:
         Variables:
@@ -47,6 +47,9 @@ Resources:
       StageName: dev1
       OpenApiVersion: "3.0.1"
       DefinitionUri: ./oas.yaml          
+      EndpointConfiguration:
+        Type: REGIONAL
+      
 
   # Services
   ListServices:
@@ -402,6 +405,9 @@ Resources:
       Description: Create An Invoice
       FunctionName: documents-create-invoice
       Role: !Ref MainEngineRole
+      Environment:
+        Variables:
+          MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
       Layers:
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
       Events:

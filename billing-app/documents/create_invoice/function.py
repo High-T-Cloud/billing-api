@@ -3,7 +3,7 @@ import json
 import requests
 from os import environ
 
-def lambda_handler(event, context):
+def lambda_handler(event, context):    
     print('--event: ', event)
 
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
@@ -53,12 +53,9 @@ def lambda_handler(event, context):
     print('--finished converting to json')    
 
     # Make morning api call
-    TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.VUZndHRzQzN6Ym4vVG1YL2JFWEVjUkFDMXpyMkx3U3VNN1o5Qm9EV0tMZTgycTlzdjJlS1VJczFiUndIQkZoaEhNUW1zRWorV1BuU0w1Y3Z1MUxHaWdyQys1OHB1QXdYc1hReFIvbWtOdDZUN2RpYTJISGhyQTFmZWtLWmVubHphTDhqSlk1ZHBjWHloRUQ3Z3FZWE55VklUK0lmZlZ3VFhmT2RCa3BHZ1hBNDE3cS9YTjFDZlZPUFgxVGlEZDVFQkVrcmpuQzZCSkdKZlN6L3RLaVZlSlUrdy9UWkFxcUVpU0NabHNmRU5vSmVuNmFYTDRPYkFhTWhHMjRTeVQ5aDRzL1RvblZYL0czZU1NWktSN28vdHlRTXVFVXZ5SDNkVXlOaE1nUGJ0SUhoWDZlZlVLK2J2R1AwOWM4dDZBOEovRFlaYlJENTJQYVpjaWdKNXprUGFBPT0.ZzA_Tqv8blXnj6kFsWTDvso2s7uMKshObdqZUMGPmJc'
+    token = utils.get_morning_token(environ['MORNING_SECRET_ARN'])
     url = 'https://sandbox.d.greeninvoice.co.il/api/v1/documents'
-    headers = {'Authorization': 'Bearer ' + TOKEN}
+    headers = {'Authorization': 'Bearer ' + token}
     res = requests.post(url, headers=headers, data=req_body)
 
     return res.content
-
-
-    

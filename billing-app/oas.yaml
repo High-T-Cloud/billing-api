@@ -17,6 +17,9 @@ tags:
   description: "An App user"
 - name: "Services"
   description: "App Services"
+- name: "Documents"
+  description: "Financial Documents"
+
 paths:
   /accounts/{id}:
     get:
@@ -1747,21 +1750,84 @@ paths:
           err-401:
             statusCode: "401"
           err-400:
+            statusCode: "400"        
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  
+  /documents/invoices:
+    post:
+      operationId: create_invoice
+      tags:
+        - "Documents"
+      summary: "Create Invoice"
+      description: "Create an invoice for an organization"
+      parameters:
+      - name: "organization_id"
+        in: "query"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "Newely created account"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: "Bad Request Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+        - lang: javascript
+          source: | 
+            fetch($BASE/documents/invoices?organization_id=12, {
+              method: 'POST',
+              headers: {Authorization: 'Bearer $TOKEN'}
+            })     
+      x-amazon-apigateway-request-validator: "Validate query string parameters and headers"       
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:documents-create-invoice/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"
+          err-400:
             statusCode: "400"
         requestTemplates:
           application/json: |
             #set($inputRoot = $input.path('$'))
             {
               "user_sub": "$context.authorizer.claims.sub",
-              "service_id": "$input.params('id')",
-              "serial"  : "$inputRoot.serial",
-              "description"  : "$inputRoot.description",
-              "unit"  : "$inputRoot.unit",
-              "value"  : "$inputRoot.value"
-            } 
+              "organization_id": "$input.params('organization_id')",
+              "description": "$inputRoot.description",
+              "language": "$inputRoot.language",
+              "currency": "$inputRoot.currency"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
+      
+
 components:
   parameters:
     OrganizationId:
