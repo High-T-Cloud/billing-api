@@ -417,4 +417,20 @@ Resources:
             Method: POST
             Path: /documents/invoices
             RestApiId: !Ref BillingApi
+  
+  FindInvoices:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: documents/find_invoices/
+      Description: Search invoices
+      FunctionName: documents-find-invoices
+      Role: !Ref MainEngineRole      
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /documents/invoices/find
+            RestApiId: !Ref BillingApi
+
  

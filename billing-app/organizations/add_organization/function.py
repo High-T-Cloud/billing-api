@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')        
     
     # build empty organization
-    new_organization = {'name': None, 'business_id': None, 'phone': None, 'emails': None, 'address': None}
+    new_organization = {'name': None, 'business_id': None, 'phone': None, 'emails': None, 'address': None, 'morning_id': None}
 
     # merge empty organization with event organization
     for key in new_organization:
@@ -22,8 +22,10 @@ def lambda_handler(event, context):
             new_organization[key] = event[key]                        
     print('--New Organization: ', new_organization)    
 
-    cursor.execute('INSERT INTO organizations (name, business_id, phone, emails, address) VALUES (%s, %s, %s, %s, %s)', tuple(new_organization.values()))
+    cursor.execute('INSERT INTO organizations (name, business_id, phone, emails, address, morning_id) VALUES (%s, %s, %s, %s, %s, %s)', tuple(new_organization.values()))
     conn.commit()
     conn.close()
+
+    # TODO: ADD COGNITO GROUP FOR THE ORGANIZATION**
     
     return {'message': 'organization added'}

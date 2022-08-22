@@ -208,4 +208,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["CreateInvoice"]
 
+[function_build_definitions.2b22b309-26fc-4f5c-bc25-a04a36d9cf30]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\billing-app\\documents\\find_invoices"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["FindInvoices"]
+
 [layer_build_definitions]
