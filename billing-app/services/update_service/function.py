@@ -27,8 +27,8 @@ def lambda_handler(event, context):
             new_service[key] = event[key]
     
     # update service
-    cursor.execute('UPDATE services SET serial=%s, description=%s, value=%s, unit=%s WHERE id = %s', 
-        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['id']))
+    cursor.execute('UPDATE services SET serial=%s, description=%s, value=%s, unit=%s, data_source=%s WHERE id = %s', 
+        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['data_srouce'], new_service['id']))
     
     conn.commit()
     conn.close()

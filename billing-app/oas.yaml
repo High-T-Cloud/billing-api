@@ -281,7 +281,8 @@ paths:
               "account_id": "$input.params('id')",
               "provider_id": "$inputRoot.provider_id",
               "account_number": "$inputRoot.account_number",
-              "name": "$inputRoot.name"
+              "name": "$inputRoot.name",
+              "payer_account": "$inputRoot.payer_account"
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -1308,7 +1309,8 @@ paths:
                 "serial"  : "$inputRoot.serial",
                 "description": "$inputRoot.description",
                 "unit"  : "$inputRoot.unit",
-                "value"  : "$inputRoot.value"
+                "value"  : "$inputRoot.value",
+                "data_source": "$inputRoot.data_source"
               } 
 
         passthroughBehavior: "when_no_templates"
@@ -1544,11 +1546,16 @@ paths:
         requestParameters:
           integration.request.querystring.organization_id: "method.request.querystring.organization_id"
         requestTemplates:
-          application/json: "#set($inputRoot = $input.path('$'))\r\n{\r\n  \"name\"\
-            \ : \"$inputRoot.name\",\r\n  \"provider_id\" : \"$inputRoot.provider_id\"\
-            ,\r\n  \"account_number\" : \"$inputRoot.account_number\",\r\n  \"organization_id\"\
-            : \"$input.params('organization_id')\",\r\n  \"user_sub\": \"$context.authorizer.claims.sub\"\
-            \r\n}"
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "organization_id": "$input.params('organization_id')",
+              "user_sub": "$context.authorizer.sub.claims.sub",
+              "account_number": "$inputRoot.account_number",
+              "payer_account": "$inputRoot.payer_account",
+              "name": "$inputRoot.name",
+              "provider_id": "$inputRoot.provider_id"
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -2160,9 +2167,12 @@ components:
           type: "string"
         provider_id:
           type: "number"
+        payer_account:
+          type: "string"
       example:
         name: "Studio Account"
         account_number: "5196"
+        payer_account: "5196"
         provider_id: "3"
     Provider:
       title: "Provider"
@@ -2240,6 +2250,8 @@ components:
           type: "number"
         unit:
           type: "string"
+        data_source:
+          type: string
       example:
         serial: "UUI-05"
         description: "Consulting"

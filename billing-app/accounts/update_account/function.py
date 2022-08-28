@@ -29,8 +29,8 @@ def lambda_handler(event, context):
     for key in account:
         if key in event and event[key] != '':
             account[key] = event[key]
+    cursor.execute('UPDATE accounts SET name=%s, account_number=%s, provider_id=%s, payer_account=%s WHERE id=%s', (account['name'], account['account_number'], account['provider_id'], account['payer_account'], event['account_id']))
     
-    cursor.execute('UPDATE accounts SET name=%s, account_number=%s, provider_id=%s WHERE id=%s', (account['name'], account['account_number'], account['provider_id'], event['account_id']))
     conn.commit()
     conn.close()
     

@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         if key in event and event[key] is not None:
             new_service[key] = event[key]
     
-    cursor.execute('INSERT INTO services (serial, description, value, unit) VALUES (%s,%s,%s,%s)',
+    cursor.execute('INSERT INTO services (serial, description, value, unit, data_source) VALUES (%s,%s,%s,%s, %s)',
         (new_service['serial'], new_service['description'], new_service['value'], new_service['unit']))
     conn.commit()
     conn.close()
