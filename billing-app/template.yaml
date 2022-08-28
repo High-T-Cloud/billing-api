@@ -13,7 +13,7 @@ Globals:
     Timeout: !Ref FunctionTimeout
     Handler: function.lambda_handler
     Layers:
-        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:25'
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:26'
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:pymysql-layer:1'
     Environment:
         Variables:
@@ -424,7 +424,7 @@ Resources:
       CodeUri: documents/find_invoices/
       Description: Search invoices
       FunctionName: documents-find-invoices
-      Role: !Ref MainEngineRole      
+      Role: arn:aws:iam::754084371841:role/main-engine-output-cntr
       Events:
         ApiCall:
           Type: Api

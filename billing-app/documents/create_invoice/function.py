@@ -6,6 +6,12 @@ from os import environ
 def lambda_handler(event, context):    
     print('--event: ', event)
 
+    # headers = utils.get_cntr_auth('arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ')
+    # url = 'https://db96mdr7ui.execute-api.eu-west-1.amazonaws.com/dev1/do/get-balance?accountId=test_id'
+    # r = requests.get(url, headers=headers)
+    # print(r.status_code)
+    # return r.json()
+
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
@@ -20,7 +26,8 @@ def lambda_handler(event, context):
     services = cursor.fetchall()
     
 
-    # TODO: ADD GETTING SERVICE DETAILS FROM CONNECTORS IF NEEDED**
+    # Get data from connector if needed
+
 
     # Add organization details
     cursor.execute('SELECT morning_id, emails FROM organizations WHERE id = %s', event['organization_id'])
@@ -29,6 +36,7 @@ def lambda_handler(event, context):
         org_details['emails'] = json.loads(org_details['emails'])
     print('--organization data: ', org_details)
 
+    conn.close()
     # --MORNING PART--    
 
     # Translate sql service data to match morning api
@@ -63,17 +71,9 @@ def lambda_handler(event, context):
     headers = {'Authorization': 'Bearer ' + token}
     res = requests.post(url, headers=headers, data=req_body)
 
-    # Add Document to DB
-    new_doc = {
-        'due': event['due'],
-        'owner': event['organization_id']
-    }
-
-    cursor.execute('INSERT INTO documents (due, owner) VALUES (%s, %s)', tuple(new_doc.values()))
-    conn.commit()
-    print('--added document to db--')
-    conn.close()
+    
  
     return {
         'body': res.json()
     }
+
