@@ -6,11 +6,11 @@ from os import environ
 def lambda_handler(event, context):    
     print('--event: ', event)
 
-    cntr_headers = None
-    secret_arn = 'arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ'
-    cntr_url = 'https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1'
-    
-
+    # headers = utils.get_cntr_auth('arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ')
+    # url = 'https://db96mdr7ui.execute-api.eu-west-1.amazonaws.com/dev1/do/get-balance?accountId=test_id'
+    # r = requests.get(url, headers=headers)
+    # print(r.status_code)
+    # return r.json()
 
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
@@ -18,32 +18,15 @@ def lambda_handler(event, context):
     # Auth required: ***TBD***
 
     # Get all service connections For Each account owned by this organizations
-    statement = 'SELECT accounts.name, account_number, services.serial, services.data_source, service_connections.* FROM accounts '
+    statement = 'SELECT accounts.name, services.serial, service_connections.* FROM accounts '
     statement += 'LEFT JOIN service_connections ON account_id = accounts.id LEFT JOIN services ON service_id = services.id '
     statement += 'WHERE service_connections.id IS NOT NULL AND owner_id = %s'
 
     cursor.execute(statement, (event['organization_id']))
     services = cursor.fetchall()
     
-    # Add connector data to services
-    for service in services:
-        if service['data_source'] == 'cntr':
-            if cntr_headers is None:
-                cntr_headers = utils.get_cntr_auth(secret_arn)
-            # Get the cntr endpoint
-            cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = (SELECT provider_id FROM accounts WHERE id = %s)', service['account_id'])
-            cntr_endpoint = cursor.fetchone()['cntr_endpoint']                        
-            # Call the connector to get the data
-            url = f'{cntr_url}{cntr_endpoint}/invoices-last?account_id={service["account_number"]}&last=1'
-            print('--url: ', cntr_headers)
-            r = requests.get(url, headers=cntr_headers)
-            print('--res status: ', r.status_code)
-            res = r.json()[0]
-            service['value'] = res['amount']
-            service['unit'] = res['currency']
-            # service['unit'] = 'ILS' # **TEMP**
-            print('--service after cntr: ', service)
-            
+
+    # Get data from connector if needed
 
 
     # Add organization details
