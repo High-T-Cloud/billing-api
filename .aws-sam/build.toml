@@ -217,4 +217,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["FindInvoices"]
 
+[function_build_definitions.1cb87bd1-ebc7-4c90-878b-cd9638b6660b]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\billing-app\\organizations\\find_organizations"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["FindOrganizations"]
+
 [layer_build_definitions]

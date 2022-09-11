@@ -1,6 +1,7 @@
 {
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "organization_id": 12,
+  "organization_id": 6,
+  "account_id": 17,
   "query": "Abu",
   "description": "First invoice from connector data",
   "language": "en",

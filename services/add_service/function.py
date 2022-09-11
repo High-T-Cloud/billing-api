@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # function logic
-    new_service = {'serial': None, 'description': None, 'value': None, 'unit': None}
+    new_service = {'serial': None, 'description': None, 'value': None, 'unit': None, 'data_source': None}
     
     # create the new secrive
     for key in new_service:
@@ -22,7 +22,7 @@ def lambda_handler(event, context):
             new_service[key] = event[key]
     
     cursor.execute('INSERT INTO services (serial, description, value, unit, data_source) VALUES (%s,%s,%s,%s, %s)',
-        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit']))
+        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['data_source']))
     conn.commit()
     conn.close()
     

@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-401: user access denied')
 
-    cursor.execute('SELECT * FROM service_connections WHERE account_id = %s', event['account_id'])
+    cursor.execute('SELECT service_connections.*, serial, data_source FROM service_connections LEFT JOIN services ON service_id = services.id WHERE account_id = %s', event['account_id'])
     services = cursor.fetchall()    
 
     conn.close()

@@ -204,6 +204,21 @@ Resources:
             Path: /organizations
             RestApiId: !Ref BillingApi 
   
+  FindOrganizations:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/find_organizations/
+      Description: Find Organizations
+      FunctionName: organizations-find-organizations
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/find
+            RestApiId: !Ref BillingApi 
+  
   AddOrganization:
     Type: 'AWS::Serverless::Function'
     Properties:
