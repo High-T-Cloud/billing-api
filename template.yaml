@@ -13,7 +13,7 @@ Globals:
     Timeout: !Ref FunctionTimeout
     Handler: function.lambda_handler
     Layers:
-        - 'arn:aws:lambda:eu-west-1:754084371841:layer:main-engine-utils:26'
+        - !Ref Utils
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:pymysql-layer:1'
     Environment:
         Variables:
@@ -49,6 +49,17 @@ Resources:
       DefinitionUri: ./oas.yaml          
       EndpointConfiguration:
         Type: REGIONAL
+  
+  Utils:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: utils/
+      Description: Utilities layer for main engine functions
+      LayerName: main-engine-utils
+      CompatibleRuntimes:
+        - python3.9
+    Metadata:
+      BuildMethod: python3.9
       
 
   # Services
@@ -64,7 +75,7 @@ Resources:
           Type: Api
           Properties:
             Method: GET
-            Path: /admin/services
+            Path: /services
             RestApiId: !Ref BillingApi
   
   AddService:
@@ -79,7 +90,7 @@ Resources:
           Type: Api
           Properties:
             Method: POST
-            Path: /admin/services
+            Path: /services
             RestApiId: !Ref BillingApi 
    
   UpdateService:
@@ -94,7 +105,7 @@ Resources:
           Type: Api
           Properties:
             Method: PATCH
-            Path: /admin/services/{id}
+            Path: /services/{id}
             RestApiId: !Ref BillingApi 
 
   DeleteService:
@@ -109,7 +120,7 @@ Resources:
           Type: Api
           Properties:
             Method: DELETE
-            Path: /admin/services/{id}
+            Path: /services/{id}
             RestApiId: !Ref BillingApi 
 
   # Accounts
@@ -126,6 +137,21 @@ Resources:
           Properties:
             Method: GET
             Path: /accounts
+            RestApiId: !Ref BillingApi 
+
+  ListAccountsAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/list_accounts_admin/
+      Description: List Accounts
+      FunctionName: accounts-list-accounts-admin
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/admin
             RestApiId: !Ref BillingApi 
 
   AddAccount:
@@ -156,6 +182,21 @@ Resources:
           Properties:
             Method: GET
             Path: /accounts/{id}
+            RestApiId: !Ref BillingApi 
+
+  GetAccountAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/get_account_admin/
+      Description: (Admin) Get Account
+      FunctionName: accounts-get-account-admin
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/{id}/admin
             RestApiId: !Ref BillingApi 
   
   UpdateAccount:
@@ -225,7 +266,10 @@ Resources:
       CodeUri: organizations/add_organization/
       Description: Add Organization
       FunctionName: organizations-add-organization
-      Role: !Ref MainEngineRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
+      Role: !Ref UsersRole
       Events:
         ApiCall:
           Type: Api
@@ -247,6 +291,21 @@ Resources:
           Properties:
             Method: GET
             Path: /organizations/{id}
+            RestApiId: !Ref BillingApi 
+
+  GetOrganizationAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/get_organization_admin/
+      Description: (Admin) Get Organization
+      FunctionName: organizations-get-organization-admin
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/{id}/admin
             RestApiId: !Ref BillingApi 
   
   UpdateOrganization:
@@ -277,6 +336,21 @@ Resources:
           Properties:
             Method: DELETE
             Path: /organizations/{id}
+            RestApiId: !Ref BillingApi 
+  
+  CheckEmailExists:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/check_email_exists/
+      Description: Get Organization
+      FunctionName: organizations-check-email-exists
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/email
             RestApiId: !Ref BillingApi 
 
   # Providers
@@ -314,6 +388,24 @@ Resources:
             Path: /users
             RestApiId: !Ref BillingApi   
   
+  ListUsersAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: users/list_users_admin
+      Description: List Users (Admin)
+      FunctionName: users-list-users-admin
+      Role: !Ref UsersRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /users/admin
+            RestApiId: !Ref BillingApi 
+  
   AddUser:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -350,6 +442,24 @@ Resources:
             Method: GET
             Path: /users/{sub}
             RestApiId: !Ref BillingApi    
+
+  GetUserAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: users/get_user_admin
+      Description: (Admin) Get User
+      FunctionName: users-get-user-admin
+      Role: !Ref UsersRole
+      Environment:
+        Variables:
+          USER_POOL_ID: eu-west-1_O0r17DvOM
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /users/{sub}/admin
+            RestApiId: !Ref BillingApi    
   
   # Service Connections
   ListServiceConnections:
@@ -366,6 +476,51 @@ Resources:
             Method: GET
             Path: /accounts/{id}/services
             RestApiId: !Ref BillingApi   
+    
+  GetServiceConnection:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/get_service_connection/
+      Description: Get a single service connection
+      FunctionName: accounts-get-service-connection
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/{id}/services/{sid}
+            RestApiId: !Ref BillingApi
+  
+  GetServiceConnectionAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/get_service_connection_admin/
+      Description: (Admin) Get a single service connection
+      FunctionName: accounts-get-service-connection-admin
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/{id}/services/{sid}/admin
+            RestApiId: !Ref BillingApi
+
+  ListServiceConnectionsAdmin:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/list_service_connections_admin/
+      Description: (Admin) List Account Service Connections
+      FunctionName: accounts-list-service-connections-admin
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/{id}/services/admin
+            RestApiId: !Ref BillingApi 
   
   AddServiceConnection:
     Type: 'AWS::Serverless::Function'

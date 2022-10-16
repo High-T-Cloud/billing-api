@@ -2,19 +2,20 @@ from os import environ
 import utils
 
 def lambda_handler(event, context):
-    print('--Event: ', event)
+    print('--event: ', event)
+
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
-    
-    # Permission required: Master
+
+    # Permission level required: Master
     user_auth = int(utils.get_user_auth(cursor, event, account_id=False, organization_id=6))
     print('--user auth: ', user_auth)
-    if user_auth !=3:
+    if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')
 
-    # Delete the account
-    cursor.execute('DELETE FROM accounts WHERE id=%s', event['account_id'])
-    conn.commit()
+    cursor.execute('SELECT service_connections.*, serial, data_source FROM service_connections LEFT JOIN services ON service_id = services.id WHERE service_connections.id = %s', event['service_id'])
+    service = cursor.fetchone()
+
     conn.close()
-    return {'message': 'account deleted'}
+    return service

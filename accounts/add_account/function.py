@@ -9,9 +9,9 @@ def lambda_handler(event, context):
         environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
-    # Auth requied: Manager
-    user_auth = utils.get_user_auth(cursor, event=event, account_id=False)
-    if user_auth < 2:
+    # Auth requied: Master
+    user_auth = utils.get_user_auth(cursor, event=event, account_id=False, organization_id=6)
+    if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')
 

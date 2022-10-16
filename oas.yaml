@@ -288,6 +288,114 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
   
+  /accounts/{id}/admin:
+    get:
+      operationId: get_account_admin
+      tags:
+      - "Accounts"
+      summary: "Get Account (Admin)"
+      description: "Get a single account from `any` organization"
+      parameters:      
+      - name: "provider_info"
+        in: "query"
+        description: "Whether to add provider name and image source in the response\
+          \ object"
+        schema:
+          type: "string"
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "A Single acocunt object"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: "Bad Request Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content: {}
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('$BASE/accounts/5?provider_info=true', {headers: {Authorization:\
+          \ 'Bearer $TOKEN'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-get-account-admin/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"
+          err-400:
+            statusCode: "400"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "provider_info": "$input.params('provider_info')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+    options:
+      tags:
+      - "Accounts"    
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  
   /accounts/{id}/services:
     get:
       operationId: list_account_services
@@ -295,6 +403,13 @@ paths:
         - Accounts
       summary: "List Account Services"
       description: Get a list of services connected an account      
+      parameters:
+        - name: count
+          in: query
+          required: false
+          description: if true the repsonse will only return an `integer` number indicating how many services the account has
+          schema:
+            type: boolean
       responses:
         "200":
           description: A list of `service_connection` objects
@@ -329,7 +444,7 @@ paths:
       x-code-samples:
         - lang: javascript
           source: |
-            fetch($BASE/accounts/6/services, {
+            fetch($BASE/accounts/6/services?count=false, {
               headers: {Authorization: 'Bearer $TOKEN'}
             })    
       #AWS
@@ -344,6 +459,7 @@ paths:
           application/json: >
             {
               "account_id": "$input.params('id')",
+              "count": "$input.params('count')",
               "user_sub": "$context.authorizer.claims.sub"
             }
         responses:
@@ -414,7 +530,8 @@ paths:
               "service_id": "$inputRoot.service_id",
               "description": "$inputRoot.description",
               "unit": "$inputRoot.unit",
-              "value": "$inputRoot.value"
+              "value": "$inputRoot.value",
+              "quantity": "$inputRoot.quantity"
             }
         responses:
           default:
@@ -456,8 +573,142 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+  
+  /accounts/{id}/services/admin:
+    get:
+      operationId: list_account_services_admin
+      tags:
+        - Accounts
+      summary: "List Account Services (Admin)"
+      description: Get a list of services connected an account in `any` organization
+      parameters:
+        - name: count
+          in: query
+          description: if true the reponse will only return an `integer` number indicating how many services the account has
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: A list of `service_connection` objects
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"                
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/ServiceConnectionsList"
+        "400":
+          description: "Bad Request Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - billing-authorizer: []
+      x-code-samples:
+        - lang: javascript
+          source: |
+            fetch($BASE/accounts/6/services/admin?count=false, {
+              headers: {Authorization: 'Bearer $TOKEN'}
+            })    
+      #AWS
+      x-amazon-apigateway-request-validator: "Validate query string parameters and headers" 
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-list-service-connections-admin/invocations"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        requestTemplates:
+          application/json: >
+            {
+              "account_id": "$input.params('id')",
+              "count": "$input.params('count')",
+              "user_sub": "$context.authorizer.claims.sub"
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"
 
   /accounts/{id}/services/{sid}:
+
+    get:
+      operationId: get_account_service
+      tags:
+        - Accounts
+      summary: "Get Account Service"
+      description: Get a single account service connection      
+      responses:
+        "200":
+          description: Success message
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"                
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/ServiceConnection"        
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - billing-authorizer: []
+      x-code-samples:
+        - lang: javascript
+          source: |
+            fetch($BASE/accounts/6/services/3, {
+              headers: {Authorization: 'Bearer $TOKEN'}              
+            })    
+      x-amazon-apigateway-request-validator: Validate query string parameters and headers"
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-get-service-connection/invocations"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        requestTemplates:
+          application/json: |            
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "service_id": "$input.params('sid')",              
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"  
+
     delete:
       operationId: delete_account_service
       tags:
@@ -523,6 +774,8 @@ paths:
               method.response.header.Access-Control-Allow-Origin: "'*'"
           err-401:
             statusCode: "401"
+          err-400:
+            statusCode: "400"
     patch:
       operationId: update_account_service
       tags:
@@ -584,7 +837,8 @@ paths:
               "service_id": "$input.params('sid')",
               "description": "$inputRoot.description",
               "value": "$inputRoot.value",
-              "unit": "$inputRoot.unit"
+              "unit": "$inputRoot.unit",
+              "quantity": "$inputRoot.quantity"
             }
         responses:
           default:
@@ -592,7 +846,9 @@ paths:
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
           err-401:
-            statusCode: "401"                           
+            statusCode: "401"   
+          err-400:
+            statusCode: "400"                        
     
     options:
       tags:
@@ -619,13 +875,73 @@ paths:
           default:
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS','PATCH','DELETE'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PATCH,DELETE'"
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+  
+  /accounts/{id}/services/{sid}/admin:
+    get:
+      operationId: get_account_service_admin
+      tags:
+        - Accounts
+      summary: "(Admin) Get Account Service"
+      description: Get a single account service connection
+      responses:
+        "200":
+          description: Success message
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"                
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/ServiceConnection"        
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - billing-authorizer: []
+      x-code-samples:
+        - lang: javascript
+          source: |
+            fetch($BASE/accounts/6/services/3/admin, {
+              headers: {Authorization: 'Bearer $TOKEN'}              
+            })    
+      x-amazon-apigateway-request-validator: Validate query string parameters and headers"
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-get-service-connection-admin/invocations"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        requestTemplates:
+          application/json: |            
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",
+              "service_id": "$input.params('sid')",              
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"  
   
   /users/{sub}:
     get:
@@ -727,6 +1043,70 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+  
+  /users/{sub}/admin:
+    get:
+      operationId: get_user_admin
+      tags:
+      - "Users"
+      summary: "Get User (Admin)"
+      description: "Get `any` user"
+      parameters:
+      - name: "sub"
+        in: "path"
+        description: "User's unique identifier"
+        required: true
+        schema:
+          type: "string"      
+      responses:
+        "400":
+          description: "Bad Request Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "A `User` object"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('$BASE/users/yy-55-99?organization_id=10', {headers: Authorization:\
+          \ 'Bearer $TOKEN'})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:users-get-user-admin/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "cognito_user": "$input.params('sub')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+
   /organizations:
     get:
       operationId: list_organizations
@@ -829,8 +1209,11 @@ paths:
                 "name": "$inputRoot.name",
                 "phone": "$inputRoot.phone",
                 "business_id": "$inputRoot.business_id",
-                "emails": "$inputRoot.emails",
-                "address": "$inputRoot.address"
+                "morning_id": "$inputRoot.morning_id",
+                "email": "$inputRoot.email",
+                "country": "$inputRoot.country",
+                "city": "$inputRoot.city",
+                "address_line": "$inputRoot.address_line"                
               }
             
         responses:
@@ -840,6 +1223,8 @@ paths:
               method.response.header.Access-Control-Allow-Origin: "'*'"
           err-401:
             statusCode: "401"
+          err-400:
+            statusCode: "400"
 
           
         passthroughBehavior: "when_no_match"
@@ -1105,6 +1490,69 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+
+  /users/admin:
+    get:
+      operationId: list_users_admin
+      tags:
+      - "Users"
+      summary: "List Users (Admin)"
+      description: "List all users in `any` organization"
+      parameters:
+        - name: "organization_id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "A `User` object"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersList"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('$BASE/users?organization_id=10', {headers: {Authorization:\
+          \ 'Bearer: $Token'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:users-list-users-admin/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('organization_id')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  
   /organizations/{id}:
     get:
       operationId: get_organization
@@ -1200,7 +1648,7 @@ paths:
           application/json: |
             {
               "organization_id": "$input.params('id')",
-              "user_sub": "$context.authorizer.claims.sub",
+              "user_sub": "$context.authorizer.claims.sub"
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -1296,11 +1744,13 @@ paths:
             {              
               "user_sub": "$context.authorizer.claims.sub",
               "organization_id": "$input.params('id')",
-              "name": "$inputRoot.name",
               "phone": "$inputRoot.phone",
               "business_id": "$inputRoot.business_id",
-              "emails": "$inputRoot.emails",
-              "address": "$inputRoot.address"
+              "email": "$inputRoot.email",
+              "country": "$inputRoot.country",
+              "city": "$inputRoot.city",
+              "address_line": "$inputRoot.address_line",
+              "morning_id": "$inputRoot.morning_id"
             }
         responses:
           default:
@@ -1309,10 +1759,161 @@ paths:
               method.response.header.Access-Control-Allow-Origin: "'*'"
           err-401:
             statusCode: "401"
+          err-400:
+            statusCode: "400"
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
-  /admin/services:
+  
+  /organizations/{id}/admin:
+    get:
+      operationId: get_organization_admin
+      tags:
+      - "Organizations"
+      summary: "Get Organization (Admin)"
+      description: "Get any organization"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "A list of organization objects"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+      security:
+      - billing-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-get-organization-admin/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('id')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  
+  /organizations/email:
+    get:
+      operationId: check_email_exists
+      tags:
+      - "Organizations"
+      summary: "Check Email Exists"
+      description: "Check if an email address exists in any organization"
+      parameters:
+      - name: "email"
+        in: query
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "Boolean value"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                type: boolean
+      security:
+      - billing-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-check-email-exists/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "email": "$input.params('email')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+    options:
+      responses:
+        "200":
+          description: "200 response"          
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+
+  /services:
     get:
       tags:
       - "Services"
@@ -1715,7 +2316,76 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
-  /admin/services/{id}:
+    
+  /accounts/admin:
+    get:
+      operationId: "list_accounts_admin"
+      tags:
+      - "Accounts"
+      summary: "List Accounts (Admin)"
+      description: "Get All accounts in `any` organizations"
+      parameters:
+      - name: "organization_id"
+        in: "query"
+        required: true
+        schema:
+          type: "string"
+      - name: "provider_info"
+        in: "query"
+        description: "Whether to provide provider name and image source with the response\
+          \ object"
+        schema:
+          type: "string"
+      responses:
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountsList"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content: {}
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('BASE/accounts?organizations_id=10&provider_info=false', {headers:\
+          \ {Authorization: 'Bearer $TOKEN'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-list-accounts-admin/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          'err-401:':
+            statusCode: "401"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "organization_id": "$input.params('organization_id')",
+              "provider_info": "$input.params('provider_info')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+
+  /services/{id}:
     delete:
       operationId: delete_service
       tags:
@@ -1788,6 +2458,8 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
     options:
+      tags:
+        - Services
       parameters:
       - name: "id"
         in: "path"
@@ -1873,6 +2545,18 @@ paths:
       x-amazon-apigateway-integration:
         httpMethod: "POST"
         uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:services-update-service/invocations"
+        requestTemplates:
+          application/json: |
+              #set($inputRoot = $input.path('$'))
+              {
+                "user_sub": "$context.authorizer.claims.sub",
+                "id": "$input.params('id')",
+                "serial"  : "$inputRoot.serial",
+                "description": "$inputRoot.description",
+                "unit"  : "$inputRoot.unit",
+                "value"  : "$inputRoot.value",
+                "data_source": "$inputRoot.data_source"
+              } 
         responses:
           default:
             statusCode: "200"
@@ -2135,7 +2819,6 @@ components:
     Organization:
       title: "Organization"
       required:
-      - "emails"
       - "name"
       type: "object"
       properties:
@@ -2147,20 +2830,16 @@ components:
           type: "object"
         phone:
           type: "object"
-        emails:
-          minItems: 1
-          type: "array"
-          items:
-            type: "string"
-        address:
-          type: "object"
-          properties:
-            country:
-              type: "string"
-            city:
-              type: "string"
-            address_line:
-              type: "string"
+        email:
+          type: string        
+        country:
+          type: "string"
+        city:
+          type: "string"
+        address_line:
+          type: "string"
+        morning_id:
+          type: "string"
     User:
       title: "User"
       type: "object"
@@ -2220,32 +2899,23 @@ components:
         provider_name: "AWS"
         image_source: "https://high-t.co.il/images/logo-aws.svg"
     OrganizationCreate:
-      title: "OrganizationCreate"
-      required:
-      - "emails"
-      - "name"
+      title: "OrganizationCreate"      
       type: "object"
-      properties:
-        name:
-          type: "string"
+      properties:        
         business_id:
           type: "string"
         phone:
           type: "string"
-        emails:
-          minItems: 1
-          type: "array"
-          items:
-            type: "string"
-        address:
-          type: "object"
-          properties:
-            country:
-              type: "string"
-            city:
-              type: "string"
-            address_line:
-              type: "string"
+        email:          
+          type: "string"        
+        country:
+          type: "string"
+        city:
+          type: "string"
+        address_line:
+          type: "string"
+        morning_id:
+          type: "string"
     Error:
       title: "Error Schema"
       type: "object"

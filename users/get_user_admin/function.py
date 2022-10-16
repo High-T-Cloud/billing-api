@@ -4,20 +4,25 @@ from boto3 import client
 
 def lambda_handler(event, context):
     """
-    event['user_sub']: the sub of the user sending the request
-    event['cognito_user']: the sub of the user that needs to be retrieved
+    user_sub: the sub of the user sending the request
+    cognito_user: the sub of the user that needs to be retrieved
     """
     print('--Event: ', event)
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
-    user_sub = event['cognito_user']
-    # Special case: get user's self details
-    if user_sub == 'USER':
-        user_sub = event['user_sub']    
+    
+    # Auth required: Master        
+    user_auth = utils.get_user_auth(cursor, event, account_id=False, organization_id=6)
+    if user_auth != 3:
+        conn.close()
+        raise Exception('err-401: user access denied')
         
+    
+    # Fetch the user
+
     # Find the organization of the retrieved user from the db
-    fsub = '%' + user_sub + '%'
+    fsub = '%' + event['cognito_user'] + '%'
     cursor.execute('SELECT id FROM organizations WHERE connected_users LIKE %s', fsub)
     user_org = cursor.fetchone()
     if not user_org:
@@ -25,14 +30,6 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-400: invalid user sub')
     user_org = user_org['id']
-
-    # Check if the user making the request has permissions to the organizations of the retrieved user
-    user_auth = utils.get_user_auth(cursor, event, organization_id=user_org, account_id=False)
-    if user_auth < 2:
-        conn.close()
-        raise Exception('err-401: user access denied')
-    
-    # Fetch the user
 
     # Get all users in the organization's group and filter to find the right sub    
     group_name = 'org-' + str(user_org)
@@ -47,7 +44,7 @@ def lambda_handler(event, context):
     my_user = None
     
     for user in group_users:
-        if user['Attributes'][0]['Value'] == user_sub:
+        if user['Attributes'][0]['Value'] == event['cognito_user']:
             print('--Found user sub--')
             my_user = {
                 'username': user['Username'],

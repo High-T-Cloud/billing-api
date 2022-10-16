@@ -15,13 +15,6 @@ def lambda_handler(event, context):
 
     cursor.execute('SELECT * FROM organizations')
     query = cursor.fetchall()  
-    conn.close()
-    
-    #format json parts
-    for item in query:
-        if item['emails']:
-            item['emails'] = json.loads(item['emails'])
-        if item['address']:
-            item['address'] = json.loads(item['address'])
+    conn.close()        
         
-    return {'body': query}
+    return query

@@ -2,14 +2,13 @@ from os import environ
 import utils
 
 def lambda_handler(event, context):
-    print('--Event: ', event)
-    
+    print('--Event: ', event)        
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
     
-    # Permission Required: Viewer
-    user_auth = utils.get_user_auth(cursor, event)
-    if user_auth < 1:
+    # Permission Required: Master
+    user_auth = utils.get_user_auth(cursor, event, account_id=False, organization_id=6)
+    if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')
     
@@ -35,5 +34,5 @@ def lambda_handler(event, context):
         raise Exception('err-400: inalid account id')
 
     conn.close()
-    return {'body': account}
+    return account
     

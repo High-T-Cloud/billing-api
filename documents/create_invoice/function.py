@@ -8,14 +8,17 @@ def lambda_handler(event, context):
 
     cntr_headers = None
     secret_arn = 'arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ'
-    cntr_url = 'https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1'
-    
-
+    cntr_url = 'https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1'    
 
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
-    # Auth required: ***TBD***
+    # Permission level required: Master
+    user_auth = int(utils.get_user_auth(cursor, event, account_id=False, organization_id=6))
+    print('--user auth: ', user_auth)
+    if user_auth !=3:
+        conn.close()
+        raise Exception('err-401: user access denied')   
 
     # Get all service connections For Each account owned by this organizations
     statement = 'SELECT accounts.name, account_number, services.serial, services.data_source, service_connections.* FROM accounts '
@@ -41,10 +44,8 @@ def lambda_handler(event, context):
             res = r.json()[0]
             service['value'] = res['amount']
             service['unit'] = res['currency']
-            # service['unit'] = 'ILS' # **TEMP**
             print('--service after cntr: ', service)
             
-
 
     # Add organization details
     cursor.execute('SELECT morning_id, emails FROM organizations WHERE id = %s', event['organization_id'])

@@ -7,9 +7,9 @@ def lambda_handler(event, context):
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
 
-    # Required permission: Manager
-    user_auth = utils.get_user_auth(cursor, event, account_id=False)
-    if user_auth < 2:
+    # Required permission: Master
+    user_auth = utils.get_user_auth(cursor, event, account_id=False, organization_id=6)
+    if user_auth < 3:
         conn.close()
         raise Exception('err-401: user access denied')
     
@@ -21,27 +21,27 @@ def lambda_handler(event, context):
     print('--current organization: ', current_organization)
         
     # Merge current organization with request organization
+    new_organization = {
+        'business_id': current_organization['business_id'],
+        'phone': current_organization['phone'],
+        'email': current_organization['email'],
+        'country': current_organization['country'],
+        'city': current_organization['city'],
+        'address_line': current_organization['address_line'],
+        'morning_id': current_organization['morning_id'],
+        'id': current_organization['id']
+    }
     for key in current_organization:
-        if key in event and event[key] is not None:
-            current_organization[key] = event[key]    
-            
-    # Format JSON values in organization
-    if type(current_organization['emails']) == str:
-        current_organization['emails'] = json.loads(current_organization['emails'])
-    if type(current_organization['address']) == str:
-        current_organization['address'] = json.loads(current_organization['address'])
-    if type(current_organization['connected_users']) == str:
-        current_organization['connected_users'] = json.loads(current_organization['connected_users'])
+        if key in event:
+            new_organization[key] = event[key]                    
         
-    print('--New organization: ', current_organization)
+    print('--New organization: ', new_organization)
     
     # update organization in DB
-    cursor.execute('UPDATE organizations SET name=%s, business_id=%s, phone=%s, emails=%s, address=%s, connected_users=%s WHERE id=%s', ( current_organization['name'], current_organization['business_id'], current_organization['phone'], json.dumps(current_organization['emails']), json.dumps(current_organization['address']), json.dumps(current_organization['connected_users']), event['organization_id'] ))
+    cursor.execute('UPDATE organizations SET business_id=%s, phone=%s, email=%s, country=%s, city=%s, address_line=%s, morning_id=%s WHERE id = %s', tuple(new_organization.values()))
     conn.commit()
     conn.close()
     
-    return {
-        'body': current_organization
-    }
+    return {'message': 'organization updated'}
     
     

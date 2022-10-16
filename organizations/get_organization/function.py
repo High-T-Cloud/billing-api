@@ -25,10 +25,6 @@ def lambda_handler(event, context):
     organization = cursor.fetchone()
     conn.close()
     if not organization:
-        raise Exception('err-400: invalid organization id')
-    
-    # Format json fields
-    if organization['address']: organization['address'] = json.loads(organization['address'])
-    if organization['emails']: organization['emails'] = json.loads(organization['emails'])                         
+        raise Exception('err-400: invalid organization id')        
 
-    return {'body': organization}
+    return organization

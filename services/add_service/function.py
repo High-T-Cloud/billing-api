@@ -16,10 +16,15 @@ def lambda_handler(event, context):
     # function logic
     new_service = {'serial': None, 'description': None, 'value': None, 'unit': None, 'data_source': None}
     
-    # create the new secrive
+    # create the new secrvice
     for key in new_service:
-        if key in event and event[key] is not None:
+        if key in event and event[key] != '':
             new_service[key] = event[key]
+    
+    # --Cntr data source--
+    if new_service['data_source'] == 'cntr':
+        new_service['value'] = None
+        new_service['unit'] = None  # Currency will be determined according to cntr data when creating invoice
     
     cursor.execute('INSERT INTO services (serial, description, value, unit, data_source) VALUES (%s,%s,%s,%s, %s)',
         (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['data_source']))
