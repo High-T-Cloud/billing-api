@@ -1,5 +1,6 @@
 {
     "yaml.schemas": {
-        "openapi:v3": "file:///c%3A/Users/Owner/Desktop/billing-api/billing-app/oas.yaml"
+        "openapi:v3": "file:///c%3A/Users/Owner/Desktop/billing-api/billing-app/oas.yaml",
+        "https://raw.githubusercontent.com/awslabs/goformation/master/schema/sam.schema.json": "file:///c%3A/Users/Tomer/Desktop/High-T/billing-api/template.yaml"
     }
 }

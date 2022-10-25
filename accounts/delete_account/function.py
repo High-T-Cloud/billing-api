@@ -12,9 +12,15 @@ def lambda_handler(event, context):
     if user_auth !=3:
         conn.close()
         raise Exception('err-401: user access denied')
+    
 
     # Delete the account
     cursor.execute('DELETE FROM accounts WHERE id=%s', event['account_id'])
+    print('--deleted account from db--')
+    # Cascading - delete related account services
+    cursor.execute('DELETE FROM service_connections WHERE account_id = %s', event['account_id'])
+    print('--deleted account services--')
     conn.commit()
     conn.close()
+    
     return {'message': 'account deleted'}

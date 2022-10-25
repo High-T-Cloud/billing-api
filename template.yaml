@@ -293,6 +293,21 @@ Resources:
             Path: /organizations/{id}
             RestApiId: !Ref BillingApi 
 
+  ChangeOrganizationStatus:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/change_organization_status/
+      Description: Get Organization
+      FunctionName: organizations-change-organization-status
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /organizations/{id}/status
+            RestApiId: !Ref BillingApi 
+
   GetOrganizationAdmin:
     Type: 'AWS::Serverless::Function'
     Properties:

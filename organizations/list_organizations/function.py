@@ -12,8 +12,12 @@ def lambda_handler(event, context):
     if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')
+    
+    statement = 'SELECT * FROM organizations'
+    if event['active_only'] is True or event['active_only'] == 'true':
+        statement += " WHERE status = 'active'"
 
-    cursor.execute('SELECT * FROM organizations')
+    cursor.execute(statement)
     query = cursor.fetchall()  
     conn.close()        
         
