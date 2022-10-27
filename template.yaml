@@ -367,6 +367,26 @@ Resources:
             Method: GET
             Path: /organizations/email
             RestApiId: !Ref BillingApi 
+  
+  FindMorningId:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/find_morning_id
+      Description: Find the mornign client id of the organization
+      FunctionName: organizations-find-morning-id
+      Role: !Ref MainEngineRole
+      Environment:
+        Variables:
+          MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /organizations/morning-id
+            RestApiId: !Ref BillingApi
 
   # Providers
   ListProviders:

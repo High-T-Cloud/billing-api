@@ -1320,6 +1320,103 @@ paths:
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
+  
+  /organizations/morning-id:
+    get:
+      operationId: get_morning_id
+      tags:
+      - "Organizations"
+      summary: "Get Organization Morning ID"
+      description: "List morning client ids based on query"
+      parameters:
+        - $ref: "#/components/parameters/Query"
+        - name: active_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true            
+      responses:
+        "200":
+          description: "A List of `MorningId` objects"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MorningId"
+        "401":
+          description: "Unauthorizard Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden Error Message (Invalid JWT Token)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('$BASE/organizations/morning-id?query=high&active_only=false', {headers: {Authorization: 'Bearer $TOKEN'}})"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-find-organizations/get-morning-id"
+        requestTemplates:
+          application/json: >
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "query": "$input.params('query')",
+              "active_only": "$input.params('active_only')"
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+
+    options:
+      tags:
+      - "Organizations"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
 
   /users:
     get:
@@ -2874,6 +2971,23 @@ components:
         type: string
 
   schemas:
+    MorningId:
+      title: MorningId
+      type: object
+      properties:
+        id:
+          type: string
+          example: hfjdskal48324fn2
+          description: Mornin's UUID for the client
+        name:
+          type: string
+          description: Morning's name for the client
+          example: Abu Mussa
+        active:
+          type: boolean
+          description: Whether the client is active or not
+          example: true
+
     Account:
       title: "Account"
       type: "object"

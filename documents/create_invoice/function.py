@@ -55,9 +55,10 @@ def lambda_handler(event, context):
     print('--organization data: ', org_details)
 
     conn.close()
+
     # --MORNING PART--    
 
-    # Translate sql service data to match morning api
+    # Format sql service data to match morning api
     income = []
     for s in services:        
         item = {

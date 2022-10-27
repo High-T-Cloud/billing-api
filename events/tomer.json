@@ -4,5 +4,6 @@
   "id": 24,
   "account_id": 24,
   "status": false,
-  "active_only": true
+  "active_only": "true",
+  "query": ""
 }
