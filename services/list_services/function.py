@@ -13,7 +13,5 @@ def lambda_handler(event, context):
     cursor.execute('SELECT * FROM services')
     services = cursor.fetchall()
     
-    return {
-        'body': services
-    }
+    return services
         

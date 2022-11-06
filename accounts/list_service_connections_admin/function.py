@@ -18,4 +18,4 @@ def lambda_handler(event, context):
     services = cursor.fetchall()    
 
     conn.close()
-    return {'body': services}
+    return services

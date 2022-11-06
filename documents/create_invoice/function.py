@@ -48,10 +48,8 @@ def lambda_handler(event, context):
             
 
     # Add organization details
-    cursor.execute('SELECT morning_id, emails FROM organizations WHERE id = %s', event['organization_id'])
-    org_details = cursor.fetchone()
-    if org_details['emails']:
-        org_details['emails'] = json.loads(org_details['emails'])
+    cursor.execute('SELECT morning_id, email FROM organizations WHERE id = %s', event['organization_id'])
+    org_details = cursor.fetchone()    
     print('--organization data: ', org_details)
 
     conn.close()
@@ -77,7 +75,7 @@ def lambda_handler(event, context):
         'lang': event['language'],
         'currency': event['currency'],
         'vatType': 0,        
-        'client': {'id': org_details['morning_id'], 'emails': org_details['emails']},
+        'client': {'id': org_details['morning_id'], 'emails': [org_details['email']]},
         'income': income
     }
     print('--request body: ', req_body)
@@ -89,10 +87,9 @@ def lambda_handler(event, context):
     url = 'https://sandbox.d.greeninvoice.co.il/api/v1/documents'
     headers = {'Authorization': 'Bearer ' + token}
     res = requests.post(url, headers=headers, data=req_body)
-
+    print('--morning response status code: ', res.status_code)
+    res = res.json()
     
  
-    return {
-        'body': res.json()
-    }
+    return res
 

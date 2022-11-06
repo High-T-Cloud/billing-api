@@ -5,5 +5,8 @@
   "account_id": 24,
   "status": false,
   "active_only": "true",
-  "query": ""
+  "query": "",
+  "language": "he",
+  "currency": "ILS",
+  "description": "testing locally"
 }

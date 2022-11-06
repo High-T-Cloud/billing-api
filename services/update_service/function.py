@@ -38,4 +38,4 @@ def lambda_handler(event, context):
     conn.commit()
     conn.close()
     
-    return {'message': 'service updated', 'body': new_service}
+    return new_service

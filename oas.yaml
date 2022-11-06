@@ -21,6 +21,10 @@ tags:
   description: "Financial Documents"
 
 paths:
+  # Organizations
+
+
+  # Accounts
   /accounts/{id}:
     get:
       operationId: get_account
@@ -31,18 +35,14 @@ paths:
       parameters:      
       - name: "provider_info"
         in: "query"
-        description: "Whether to add provider name and image source in the response\
-          \ object"
+        description: "Whether to add provider name and image source in the response object"
         schema:
-          type: "string"
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+          type: "boolean"
+          default: true
+      - $ref: "#/components/parameters/Id"
       responses:
         "200":
-          description: "A Single acocunt object"
+          description: "A Single `acocunt` object"
           headers:
             Access-Control-Allow-Origin:
               schema:
@@ -288,6 +288,7 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
   
+
   /accounts/{id}/admin:
     get:
       operationId: get_account_admin
@@ -396,6 +397,7 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
   
+
   /accounts/{id}/services:
     get:
       operationId: list_account_services
@@ -447,7 +449,6 @@ paths:
             fetch($BASE/accounts/6/services?count=false, {
               headers: {Authorization: 'Bearer $TOKEN'}
             })    
-      #AWS
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers" 
       x-amazon-apigateway-integration:
         type: aws
@@ -573,6 +574,19 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+
+  # Users
+
+
+  # Providers
+  
+
+
+  # Services
+  
+  
+  
+  
   
   /accounts/{id}/services/admin:
     get:
@@ -1323,22 +1337,30 @@ paths:
   
   /organizations/morning-id:
     get:
-      operationId: get_morning_id
+      operationId: find_morning_id
       tags:
       - "Organizations"
-      summary: "Get Organization Morning ID"
-      description: "List morning client ids based on query"
+      summary: "List Morning Clients"
+      description: "List morning cliets based on query"
       parameters:
         - $ref: "#/components/parameters/Query"
         - name: active_only
           in: query
+          description: Whether to return only active clients
           required: false
+          example: false
           schema:
             type: boolean
-            default: true            
+            default: false            
       responses:
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "200":
-          description: "A List of `MorningId` objects"
+          description: "A List of Morning clients"
           headers:
             Access-Control-Allow-Origin:
               schema:
@@ -1346,15 +1368,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MorningId"
-        "401":
-          description: "Unauthorizard Error Message"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/UsersList"
         "403":
-          description: Forbidden Error Message (Invalid JWT Token)
+          description: "Forbidden Error Message (Invalid JWT Token)"
           content:
             application/json:
               schema:
@@ -1363,24 +1379,25 @@ paths:
       - billing-authorizer: []
       x-codeSamples:
       - lang: "javascript"
-        source: "fetch('$BASE/organizations/morning-id?query=high&active_only=false', {headers: {Authorization: 'Bearer $TOKEN'}})"
+        source: "fetch('$BASE/users?organization_id=10', {headers: {Authorization:\
+          \ 'Bearer: $Token'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
       x-amazon-apigateway-integration:
         httpMethod: "POST"
-        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-find-organizations/get-morning-id"
-        requestTemplates:
-          application/json: >
-            {
-              "user_sub": "$context.authorizer.claims.sub",
-              "query": "$input.params('query')",
-              "active_only": "$input.params('active_only')"
-            }
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-find-morning-id/invocations"
         responses:
           default:
             statusCode: "200"
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
-          err-401:
-            statusCode: "401"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "query": "$input.params('query')",
+              "active": "$input.params('active')"              
+            }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -1410,13 +1427,15 @@ paths:
           default:
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Methods: "'GET, OPTIONS'"
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+      
+
 
   /users:
     get:
@@ -2095,6 +2114,7 @@ paths:
     get:
       tags:
       - "Services"
+      operationId: list_services
       summary: "List Services"
       description: "List all servies in the app"
       responses:
@@ -2965,8 +2985,15 @@ components:
     Query:
       name: query
       in: query
-      required: true
+      required: false
       example: high
+      schema:
+        type: string
+    Id:
+      name: Id
+      in: path
+      description: The object ID
+      required: true
       schema:
         type: string
 

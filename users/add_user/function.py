@@ -64,7 +64,7 @@ def lambda_handler(event, context):
     }
     
     conn.close()    
-    return {'body': new_user}
+    return new_user
     
     
     

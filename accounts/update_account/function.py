@@ -35,5 +35,5 @@ def lambda_handler(event, context):
     conn.commit()
     conn.close()
     
-    return {'body': account}
+    return account
     

@@ -35,5 +35,5 @@ def lambda_handler(event, context):
         raise Exception('err-400: inalid account id')
 
     conn.close()
-    return {'body': account}
+    return account
     

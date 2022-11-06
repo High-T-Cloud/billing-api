@@ -18,7 +18,5 @@ def lambda_handler(event, context):
     docs = cursor.fetchall()
 
     conn.close()
-    return {
-        'body': docs
-    }
+    return docs
 

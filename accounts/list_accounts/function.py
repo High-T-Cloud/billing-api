@@ -31,5 +31,5 @@ def lambda_handler(event, context):
     accounts = cursor.fetchall()
     
     conn.close()
-    return {'body': accounts}    
+    return accounts
     

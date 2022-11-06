@@ -31,6 +31,9 @@ Parameters:
   MainEngineRole:
     Type: String
     Default: arn:aws:iam::754084371841:role/main-engine-lambda-role
+  OutputRole:
+    Type: String
+    Default: arn:aws:iam::754084371841:role/main-engine-output-cntr
   FunctionTimeout:
     Type: Number
     Default: 10
@@ -374,7 +377,7 @@ Resources:
       CodeUri: organizations/find_morning_id
       Description: Find the mornign client id of the organization
       FunctionName: organizations-find-morning-id
-      Role: !Ref MainEngineRole
+      Role: !Ref OutputRole
       Environment:
         Variables:
           MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
@@ -384,7 +387,7 @@ Resources:
         ApiCall:
           Type: Api
           Properties:
-            Method: POST
+            Method: GET
             Path: /organizations/morning-id
             RestApiId: !Ref BillingApi
 
@@ -609,7 +612,7 @@ Resources:
       CodeUri: documents/create_invoice/
       Description: Create An Invoice
       FunctionName: documents-create-invoice
-      Role: !Ref MainEngineRole
+      Role: !Ref OutputRole
       Environment:
         Variables:
           MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
@@ -629,7 +632,7 @@ Resources:
       CodeUri: documents/find_invoices/
       Description: Search invoices
       FunctionName: documents-find-invoices
-      Role: arn:aws:iam::754084371841:role/main-engine-output-cntr
+      Role: !Ref OutputRole
       Events:
         ApiCall:
           Type: Api
