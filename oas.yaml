@@ -532,7 +532,8 @@ paths:
               "description": "$inputRoot.description",
               "unit": "$inputRoot.unit",
               "value": "$inputRoot.value",
-              "quantity": "$inputRoot.quantity"
+              "quantity": "$inputRoot.quantity",
+              "connection_id": "$inputRoot.connection_id"
             }
         responses:
           default:
@@ -852,7 +853,8 @@ paths:
               "description": "$inputRoot.description",
               "value": "$inputRoot.value",
               "unit": "$inputRoot.unit",
-              "quantity": "$inputRoot.quantity"
+              "quantity": "$inputRoot.quantity",
+              "connection_id": "$inputRoot.connection_id"
             }
         responses:
           default:
@@ -1198,6 +1200,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "401":
           description: "Unauthorizard Error Message"
           content:
@@ -1235,13 +1243,11 @@ paths:
           default:
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"          
           err-401:
             statusCode: "401"
           err-400:
-            statusCode: "400"
-
-          
+            statusCode: "400"          
         passthroughBehavior: "when_no_match"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
@@ -3100,7 +3106,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Invoice"
-
     AccountsList:
       title: "AccountsList"
       type: "object"
