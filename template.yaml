@@ -640,5 +640,20 @@ Resources:
             Method: GET
             Path: /documents/invoices/find
             RestApiId: !Ref BillingApi
+  
+  IpnTestTBD:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: documents/ipn_test_TBD
+      Description: Test Paypal IPN Connections
+      FunctionName: ipn-test-TBD
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /documents/paypal
+            RestApiId: !Ref BillingApi
 
  

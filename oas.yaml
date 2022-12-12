@@ -2879,6 +2879,132 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"  
+  
+
+  /documents/paypal:
+    post:
+      operationId: ipn_testTBD
+      tags:
+        - "Documents"
+      summary: "Test Pyapal IPN"
+      description: "Test paypal IPN"      
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: "Bad Request Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"      
+      # security:
+      # - billing-authorizer: []          
+      x-amazon-apigateway-request-validator: "Validate query string parameters and headers"       
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:ipn-test-TBD/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"
+          err-400:
+            statusCode: "400"
+        requestTemplates:
+          application/x-www-form-urlencoded: |
+            #set($allParams = $input.params())
+            {
+            "body-json" : $input.json('$'),
+            "params" : {
+            #foreach($type in $allParams.keySet())
+                #set($params = $allParams.get($type))
+            "$type" : {
+                #foreach($paramName in $params.keySet())
+                "$paramName" : "$util.escapeJavaScript($params.get($paramName))"
+                    #if($foreach.hasNext),#end
+                #end
+            }
+                #if($foreach.hasNext),#end
+            #end
+            },
+            "stage-variables" : {
+            #foreach($key in $stageVariables.keySet())
+            "$key" : "$util.escapeJavaScript($stageVariables.get($key))"
+                #if($foreach.hasNext),#end
+            #end
+            },
+            "context" : {
+                "account-id" : "$context.identity.accountId",
+                "api-id" : "$context.apiId",
+                "api-key" : "$context.identity.apiKey",
+                "authorizer-principal-id" : "$context.authorizer.principalId",
+                "caller" : "$context.identity.caller",
+                "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                "http-method" : "$context.httpMethod",
+                "stage" : "$context.stage",
+                "source-ip" : "$context.identity.sourceIp",
+                "user" : "$context.identity.user",
+                "user-agent" : "$context.identity.userAgent",
+                "user-arn" : "$context.identity.userArn",
+                "request-id" : "$context.requestId",
+                "resource-id" : "$context.resourceId",
+                "resource-path" : "$context.resourcePath"
+                }
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+    options:
+      tags:
+      - "Documents"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock" 
 
   /documents/invoices/find:
     get:
