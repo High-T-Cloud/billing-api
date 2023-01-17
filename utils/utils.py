@@ -109,7 +109,7 @@ def get_morning_token(secret_arn:str)->str:
         'secret': secret['api_secret']
     }
     res = post(url, data=dumps(req_body), headers={'Content-Type': 'application/json'})
-    print('--Morning status code: ', res.status_code)
+    print('--Morning token status code: ', res.status_code)
     res = res.text
     res = loads(res)
 

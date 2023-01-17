@@ -647,7 +647,12 @@ Resources:
       CodeUri: documents/ipn_test_TBD
       Description: Test Paypal IPN Connections
       FunctionName: ipn-test-TBD
-      Role: !Ref MainEngineRole
+      Role: !Ref OutputRole
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Environment:
+        Variables:
+          MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
       Events:
         ApiCall:
           Type: Api

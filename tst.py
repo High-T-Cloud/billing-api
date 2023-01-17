@@ -37,7 +37,7 @@ req_body = {
 
 # Morning consts
 print('--getting morning token--')
-token = '--TOKEN--'
+token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.VUZndHRzQzN6Ym4vVG1YL2JFWEVjU2M3U2lYVEdveWJRVzQ4U0puQU5ac2ZBLzhZSERhVkpnS1FhMVNPTEZoMVBvSTF3ZXBPc2ZRckxZMUN3OWdURDJiWmtjOUYxVGFPZyttZW5vOGQ4d0Nid0g0Q1RZNHNFektUaWR3bFhDTnlHRFRCWTFjS3ZFRklsSzR1MVVCcndOWFlKUW4xMEkrRkpmd0pXd3Jsd3hTZE5nZjlQM1JwTHBLSUN2U3VWVmxEc25BQ2I3QmdiTktXaHk2R1FsdkZyRGwzS216bmpQcklNOVc4K1FTdloyS2ZmL2oxYUd1MVlEWUxUWjJqeEE5ajBPZmhUVnpJc20rNWJWS3A3R0dqSGIrTnR6VVZ5TXpZMWxucDNjVUFFSnJiWTh6MHoyMkNJTXNqVGpBRnJzUHFXbDlBTEMrNkJIK1A0WUFSWmtCVFNRPT0.x3JbKbCWhpQ8RTk2aaKOxMgD_E7gFiHObYO8W_toQGE'
 url = 'https://sandbox.d.greeninvoice.co.il/api/v1/documents'
 headers = {'Authorization': 'Bearer ' + token}
 res = requests.post(url, headers=headers, data=json.dumps(req_body))
