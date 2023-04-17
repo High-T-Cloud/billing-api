@@ -29,6 +29,7 @@ def lambda_handler(event, context):
         'city': current_organization['city'],
         'address_line': current_organization['address_line'],
         'morning_id': current_organization['morning_id'],
+        'gapps_id': current_organization['gapps_id'],
         'id': current_organization['id']
     }
     for key in current_organization:
@@ -38,7 +39,7 @@ def lambda_handler(event, context):
     print('--New organization: ', new_organization)
     
     # update organization in DB
-    cursor.execute('UPDATE organizations SET business_id=%s, phone=%s, email=%s, country=%s, city=%s, address_line=%s, morning_id=%s WHERE id = %s', tuple(new_organization.values()))
+    cursor.execute('UPDATE organizations SET business_id=%s, phone=%s, email=%s, country=%s, city=%s, address_line=%s, morning_id=%s, gapps_id=%s WHERE id = %s', tuple(new_organization.values()))
     conn.commit()
     conn.close()
     
