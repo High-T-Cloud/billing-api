@@ -1233,7 +1233,6 @@ paths:
                 "phone": "$inputRoot.phone",
                 "business_id": "$inputRoot.business_id",
                 "morning_id": "$inputRoot.morning_id",
-                "gapps_id": "$inputRoot.gapps_id",
                 "email": "$inputRoot.email",
                 "country": "$inputRoot.country",
                 "city": "$inputRoot.city",
@@ -1874,8 +1873,7 @@ paths:
               "country": "$inputRoot.country",
               "city": "$inputRoot.city",
               "address_line": "$inputRoot.address_line",
-              "morning_id": "$inputRoot.morning_id",
-              "gapps_id": "$inputRoot.gapps_id"
+              "morning_id": "$inputRoot.morning_id"
             }
         responses:
           default:
@@ -3196,8 +3194,6 @@ components:
           type: "string"
         morning_id:
           type: "string"
-        gapps_id:
-          type: "string"
     User:
       title: "User"
       type: "object"
@@ -3272,8 +3268,6 @@ components:
         address_line:
           type: "string"
         morning_id:
-          type: "string"
-        gapps_id:
           type: "string"
     Error:
       title: "Error Schema"

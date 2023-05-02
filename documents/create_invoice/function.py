@@ -1,16 +1,14 @@
 import utils
 import json
 import requests
-from os import environ
+import os
 
 def lambda_handler(event, context):    
     print('--event: ', event)
 
     cntr_headers = None
-    secret_arn = 'arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ'
-    cntr_url = 'https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1'    
 
-    conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
+    conn = utils.get_db_connection(os.environ['DB_ENDPOINT'], os.environ['DB_NAME'], os.environ['SECRET_ARN'])
     cursor = conn.cursor()
 
     # Permission level required: Master
@@ -32,15 +30,15 @@ def lambda_handler(event, context):
     for service in services:
         if service['data_source'] == 'cntr':
             if cntr_headers is None:
-                cntr_headers = utils.get_cntr_auth(secret_arn)
+                cntr_headers = utils.get_cntr_auth(os.environ['CNTR_SECRET_ARN'])
             # Get the cntr endpoint
             cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = (SELECT provider_id FROM accounts WHERE id = %s)', service['account_id'])
             cntr_endpoint = cursor.fetchone()['cntr_endpoint']                        
             # Call the connector to get the data
-            url = f'{cntr_url}{cntr_endpoint}/invoices-last?account_id={service["account_number"]}&last=1'
-            print('--url: ', cntr_headers)
+            url = f'{os.environ["CNTR_API_URL"]}{cntr_endpoint}/invoices-last?account_id={service["account_number"]}&last=1'
+            print('--cntr url: ', url)
             r = requests.get(url, headers=cntr_headers)
-            print('--res status: ', r.status_code)
+            print('--cntr res status: ', r.status_code)
             res = r.json()[0]
             service['value'] = res['amount']
             service['unit'] = res['currency']
@@ -83,7 +81,7 @@ def lambda_handler(event, context):
     req_body = json.dumps(req_body)    
 
     # Make morning api call
-    token = utils.get_morning_token(environ['MORNING_SECRET_ARN'])
+    token = utils.get_morning_token(os.environ['MORNING_SECRET_ARN'])
     url = 'https://sandbox.d.greeninvoice.co.il/api/v1/documents'
     headers = {'Authorization': 'Bearer ' + token}
     res = requests.post(url, headers=headers, data=req_body)

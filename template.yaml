@@ -616,6 +616,8 @@ Resources:
       Environment:
         Variables:
           MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
+          CNTR_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ
+          CNTR_API_URL: https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1
       Layers:
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
       Events:
@@ -624,6 +626,28 @@ Resources:
           Properties:
             Method: POST
             Path: /documents/invoices
+            RestApiId: !Ref BillingApi
+
+  GetAccountServices:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Timeout: 30
+      CodeUri: documents/get_account_services/
+      Description: Create An Invoice
+      FunctionName: documents-create-invoice
+      Role: !Ref OutputRole
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Environment:
+        Variables:
+          CNTR_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:cntr-credentials-sEq9AZ
+          CNTR_API_URL: https://yg192xmrwc.execute-api.eu-west-1.amazonaws.com/dev1
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /documents/services
             RestApiId: !Ref BillingApi
   
   FindInvoices:
