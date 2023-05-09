@@ -15,11 +15,11 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')    
 
     # Validate service connection
-    cursor.execute('SELECT id FROM service_connections WHERE id = %s', event['service_id'])
+    cursor.execute('SELECT id FROM account_services WHERE id = %s', event['service_id'])
     service_id = cursor.fetchone()
     if not service_id:
         conn.close()
-        raise Exception('err-400: invalid service connection id')
+        raise Exception('err-400: invalid account service id')
     print('--validated sid--')
     
     # Delete service connection

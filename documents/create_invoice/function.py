@@ -19,9 +19,9 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')   
 
     # Get all service connections For Each account owned by this organizations
-    statement = 'SELECT accounts.name, account_number, services.serial, services.data_source, service_connections.* FROM accounts '
-    statement += 'LEFT JOIN service_connections ON account_id = accounts.id LEFT JOIN services ON service_id = services.id '
-    statement += 'WHERE service_connections.id IS NOT NULL AND owner_id = %s'
+    statement = 'SELECT accounts.name, account_number, services.serial, services.data_source, account_services.* FROM accounts '
+    statement += 'LEFT JOIN account_services ON account_id = accounts.id LEFT JOIN services ON service_id = services.id '
+    statement += 'WHERE account_services.id IS NOT NULL AND owner_id = %s'
 
     cursor.execute(statement, (event['organization_id']))
     services = cursor.fetchall()

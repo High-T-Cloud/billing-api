@@ -17,7 +17,7 @@ def get_services_g1(cursor, conn, cntr_endpoint:str, account_number:str, account
     invoice = invoice[0]
 
     # Get the account service for the provider bill
-    cursor.execute('SELECT service_connections.* FROM service_connections LEFT JOIN services ON services.id = service_id WHERE account_id = %s AND data_source = %s', (account_id, 'cntr'))
+    cursor.execute('SELECT account_services.* FROM account_services LEFT JOIN services ON services.id = service_id WHERE account_id = %s AND data_source = %s', (account_id, 'cntr'))
     account_service = cursor.fetchone()
     print('--service before update: ', account_service)
 

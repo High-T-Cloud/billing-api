@@ -7,7 +7,7 @@ import requests
 
 def create_tax_invoice(services: list, organization: dict, invoice_description: str) -> dict:
     """
-    Given a service_connection object and a organization object, call the morning API and create a tax invoice
+    Given an `account_service` object and a organization object, call the morning API and create a tax invoice
     """
     print('--creating tax invoice--')
 
@@ -19,7 +19,7 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
         'name': organization['name'],
         'emails': [organization['email']]
     }
-    # Add the payment and income data based on the service_connection
+    # Add the payment and income data based on the account_service
 
     # Format each service in the services list to match morning api
     # Calculate the sum of values for all the services and add it to the payment part in the payload
@@ -86,7 +86,7 @@ def handle_recurring_payment(data):
 
     # Extract the relevant service data
     cursor.execute(
-        'SELECT service_connections.*, serial FROM service_connections LEFT JOIN services ON services.id = service_id WHERE connection_id = %s', (data['subscription_id']))
+        'SELECT account_services.*, serial FROM account_services LEFT JOIN services ON services.id = service_id WHERE connection_id = %s', (data['subscription_id']))
     services = cursor.fetchall()
     print('--services found: ', services)
 

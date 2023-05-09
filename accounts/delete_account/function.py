@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     cursor.execute('DELETE FROM accounts WHERE id=%s', event['account_id'])
     print('--deleted account from db--')
     # Cascading - delete related account services
-    cursor.execute('DELETE FROM service_connections WHERE account_id = %s', event['account_id'])
+    cursor.execute('DELETE FROM account_services WHERE account_id = %s', event['account_id'])
     print('--deleted account services--')
     conn.commit()
     conn.close()
