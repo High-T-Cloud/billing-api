@@ -23,9 +23,9 @@ def lambda_handler(event, context):
     print('--validated sid--')
     
     # Delete service connection
-    cursor.execute('DELETE FROM service_connections WHERE id = %s', event['service_id'])
+    cursor.execute('DELETE FROM account_services WHERE id = %s', event['service_id'])
     conn.commit()
     conn.close()
 
-    return {'message': 'service connection deleted'}
+    return {'message': 'account service deleted'}
 

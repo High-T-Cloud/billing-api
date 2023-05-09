@@ -244,69 +244,6 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["GetUserAdmin"]
 
-[function_build_definitions.5905027c-e907-430f-bb39-6d05f1875b5e]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\list_service_connections"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["ListServiceConnections"]
-
-[function_build_definitions.d2f89625-8ae2-4b46-bddb-32db925b6736]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\get_service_connection"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["GetServiceConnection"]
-
-[function_build_definitions.b7259f5e-f636-409f-a347-6ac9bc5a8e42]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\get_service_connection_admin"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["GetServiceConnectionAdmin"]
-
-[function_build_definitions.7a04b244-ef75-44a4-89d5-130cfe74b375]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\list_service_connections_admin"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["ListServiceConnectionsAdmin"]
-
-[function_build_definitions.05060ebd-430d-47e2-87ae-47b3a9e27388]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\add_service_connection"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["AddServiceConnection"]
-
-[function_build_definitions.2282941c-07f0-4633-97d0-3ceecb3674ad]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\delete_service_connection"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["DeleteServiceConnection"]
-
-[function_build_definitions.849f4179-09fc-4f39-b319-fccf7756569f]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\update_service_connection"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["UpdateServiceConnection"]
-
 [function_build_definitions.1688b034-c905-4e91-8c91-9736482dd4f0]
 codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\documents\\create_invoice"
 runtime = "python3.9"
@@ -334,14 +271,77 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["IpnTestTBD"]
 
-[function_build_definitions.77264c8b-b912-42b9-9833-25212040c53d]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\documents\\get_account_services"
+[function_build_definitions.16e35a2f-3424-42eb-a4cb-cc43fa5b8f10]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\list_account_services"
 runtime = "python3.9"
 architecture = "x86_64"
 handler = "function.lambda_handler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["GetAccountServices"]
+functions = ["ListAccountServices"]
+
+[function_build_definitions.842bbb62-22af-45ba-93b1-8afa52a9a82e]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\get_account_service"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GetAccountService"]
+
+[function_build_definitions.747f8eeb-0aeb-45cc-9851-2584c737086b]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\get_account_service_admin"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GetAccountServiceAdmin"]
+
+[function_build_definitions.d3b6a1da-2cd2-46aa-b2f6-b53ec7186bbf]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\list_account_services_admin"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ListAccountServicesAdmin"]
+
+[function_build_definitions.6d233a44-a959-4581-826c-9cf5610ae3c3]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\add_account_service"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["AddAccountService"]
+
+[function_build_definitions.c1b1214e-386c-486d-9cb8-a32caa225a8a]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\delete_account_service"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["DeleteAccountService"]
+
+[function_build_definitions.df3f7c94-4c4d-43d8-8fdc-7817f2688fe0]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\update_account_service"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["UpdateAccountService"]
+
+[function_build_definitions.5d4a8498-74ea-482a-a00c-5b1a4ccf0c66]
+codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\refresh_account_services"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["RefreshAccountServices"]
 
 [layer_build_definitions]
 [layer_build_definitions.0738394c-0508-4adb-9b1f-8ba3b3dbe544]

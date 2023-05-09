@@ -15,11 +15,11 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # Fetch the service connection
-    cursor.execute('SELECT * FROM service_connections WHERE id = %s', event['service_id'])
+    cursor.execute('SELECT * FROM account_services WHERE id = %s', event['service_id'])
     service = cursor.fetchone()
     if not service:
         conn.close()
-        raise Exception('err-400: invalid service connection id')
+        raise Exception('err-400: invalid account service id')
     print('--old service: ', service)
 
     # Merge service with event data
@@ -29,7 +29,7 @@ def lambda_handler(event, context):
     print('--New service: ', service)    
             
     params = (service['description'], service['value'], service['unit'], service['id'])
-    cursor.execute('UPDATE service_connections SET description=%s, value=%s, unit=%s WHERE id = %s', params)
+    cursor.execute('UPDATE account_services SET description=%s, value=%s, unit=%s WHERE id = %s', params)
     
     conn.commit()
     conn.close()

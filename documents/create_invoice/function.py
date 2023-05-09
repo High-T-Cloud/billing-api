@@ -26,23 +26,23 @@ def lambda_handler(event, context):
     cursor.execute(statement, (event['organization_id']))
     services = cursor.fetchall()
     
-    # Add connector data to services
-    for service in services:
-        if service['data_source'] == 'cntr':
-            if cntr_headers is None:
-                cntr_headers = utils.get_cntr_auth(os.environ['CNTR_SECRET_ARN'])
-            # Get the cntr endpoint
-            cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = (SELECT provider_id FROM accounts WHERE id = %s)', service['account_id'])
-            cntr_endpoint = cursor.fetchone()['cntr_endpoint']                        
-            # Call the connector to get the data
-            url = f'{os.environ["CNTR_API_URL"]}{cntr_endpoint}/invoices-last?account_id={service["account_number"]}&last=1'
-            print('--cntr url: ', url)
-            r = requests.get(url, headers=cntr_headers)
-            print('--cntr res status: ', r.status_code)
-            res = r.json()[0]
-            service['value'] = res['amount']
-            service['unit'] = res['currency']
-            print('--service after cntr: ', service)
+    # Add connector data to services - ** DEPRECATED AND MOVED TO DIFFERENT FUNCTION **
+    # for service in services:
+    #     if service['data_source'] == 'cntr':
+    #         if cntr_headers is None:
+    #             cntr_headers = utils.get_cntr_auth(os.environ['CNTR_SECRET_ARN'])
+    #         # Get the cntr endpoint
+    #         cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = (SELECT provider_id FROM accounts WHERE id = %s)', service['account_id'])
+    #         cntr_endpoint = cursor.fetchone()['cntr_endpoint']                        
+    #         # Call the connector to get the data
+    #         url = f'{os.environ["CNTR_API_URL"]}{cntr_endpoint}/invoices-last?account_id={service["account_number"]}&last=1'
+    #         print('--cntr url: ', url)
+    #         r = requests.get(url, headers=cntr_headers)
+    #         print('--cntr res status: ', r.status_code)
+    #         res = r.json()[0]
+    #         service['value'] = res['amount']
+    #         service['unit'] = res['currency']
+    #         print('--service after cntr: ', service)
             
 
     # Add organization details

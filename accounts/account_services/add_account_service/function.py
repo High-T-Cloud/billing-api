@@ -35,10 +35,10 @@ def lambda_handler(event, context):
 
     
 
-    cursor.execute('INSERT INTO service_connections (service_id, account_id, description, value, unit, quantity) VALUES (%s,%s,%s,%s,%s,%s)', tuple(new_service.values()))
+    cursor.execute('INSERT INTO account_services (service_id, account_id, description, value, unit, quantity) VALUES (%s,%s,%s,%s,%s,%s)', tuple(new_service.values()))
     conn.commit()
     conn.close()
 
     return {
-        'message': 'service connection added'
+        'message': 'account service added'
     }
