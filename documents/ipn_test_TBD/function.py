@@ -7,7 +7,7 @@ import requests
 
 def create_tax_invoice(services: list, organization: dict, invoice_description: str) -> dict:
     """
-    Given an `account_service` object and a organization object, call the morning API and create a tax invoice
+    Given an `account_service` object and an `organization` object, call the morning API and create a tax invoice
     """
     print('--creating tax invoice--')
 

@@ -33,4 +33,8 @@ def lambda_handler(event, context):
     
     conn.commit()
     conn.close()
+
+    # Serialize datetime column
+    service['last_update'] = service['last_update'].isoformat()
+    
     return service

@@ -28,8 +28,8 @@ def get_services_g1(cursor, conn, cntr_endpoint:str, account_number:str, account
             'description': account_service['description'],
             'value': invoice['amount'],
             'unit': invoice['currency'],
-            'quantity': account_service['quantity'],
             'margin': account_service['margin'],
+            'quantity': account_service['quantity'],
         }
     
     print('--service after update: ', f_account_service)
@@ -64,8 +64,8 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
             'description': service['description'],
             'value': sub['value'],
             'unit': sub['unit'],
-            'quantity': sub['quantity'],
             'margin': sub['margin'],
+            'quantity': sub['quantity'],
         }
         account_services.append(account_service)
 
@@ -121,6 +121,7 @@ def lambda_handler(event, context):
     print('--deleted old account services')
     
     for service in account_services:
+        print('--inserting service: ', service)
         cursor.execute('INSERT INTO account_services (account_id, service_id, description, value, unit, margin, quantity) VALUES (%s, %s, %s, %s, %s, %s, %s)', list(service.values()))
     conn.commit()
     print('--inserted new services--')

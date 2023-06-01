@@ -22,7 +22,11 @@ def lambda_handler(event, context):
         return count
 
     cursor.execute('SELECT account_services.*, serial, data_source FROM account_services LEFT JOIN services ON service_id = services.id WHERE account_id = %s', event['account_id'])
-    services = cursor.fetchall()    
+    services = cursor.fetchall()   
+
+    # Serialize datetime columns
+    for service in services:
+        service['last_update'] = service['last_update'].isoformat() 
 
     conn.close()
     return services
