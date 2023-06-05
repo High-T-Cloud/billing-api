@@ -40,6 +40,10 @@ Parameters:
   UsersRole:
     Type: String
     Default: arn:aws:iam::754084371841:role/main-engine-users-lambda-role
+  PaypalRole:
+    Type: String
+    Default: arn:aws:iam::754084371841:role/main-engine-paypal-role
+  
 
 
 Resources:
@@ -676,18 +680,19 @@ Resources:
       CodeUri: documents/ipn_test_TBD
       Description: Test Paypal IPN Connections
       FunctionName: ipn-test-TBD
-      Role: !Ref OutputRole
+      Role: !Ref PaypalRole
       Layers:
         - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
       Environment:
         Variables:
           MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
+          PAYPAL_VERIFY_URL: https://ipnpb.sandbox.paypal.com/cgi-bin/webscr
       Events:
-        ApiCall:
-          Type: Api
+        QueueMessage:
+          Type: SQS
           Properties:
-            Method: POST
-            Path: /documents/paypal
-            RestApiId: !Ref BillingApi
+            Queue: arn:aws:sqs:eu-west-1:754084371841:PaypalQueue
+            BatchSize: 12
+            MaximumBatchingWindowInSeconds: 60
 
  

@@ -1,9 +1,12 @@
 import json
 from urllib.parse import parse_qs
 import utils
-from os import environ
+import os
 import requests
 
+# Paypal IPN Txn types:
+# 'recurring_payment_profile_cancel' - Subscription cancled by client
+# I-E918601SMY45
 
 def create_tax_invoice(services: list, organization: dict, invoice_description: str) -> dict:
     """
@@ -62,7 +65,7 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
     print('--morning payload: ', payload)
 
     # Make the morning API call
-    token = utils.get_morning_token(environ['MORNING_SECRET_ARN'])
+    token = utils.get_morning_token(os.environ['MORNING_SECRET_ARN'])
     url = 'https://sandbox.d.greeninvoice.co.il/api/v1/documents'
     headers = {'Authorization': 'Bearer ' + token}
     res = requests.post(url, headers=headers, data=json.dumps(payload))
@@ -76,29 +79,25 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
     return res
 
 
-def handle_recurring_payment(data):
-    print('--parsed data: ', data)
+def handle_recurring_payment(recurring_payment_id):
+    print('--handling recurring payment with id: ', recurring_payment_id)
 
     # Connect to DB
-    conn = utils.get_db_connection(
-        environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
+    conn = utils.get_db_connection(os.environ['DB_ENDPOINT'], os.environ['DB_NAME'], os.environ['SECRET_ARN'])
     cursor = conn.cursor()
 
     # Extract the relevant service data
-    cursor.execute(
-        'SELECT account_services.*, serial FROM account_services LEFT JOIN services ON services.id = service_id WHERE connection_id = %s', (data['subscription_id']))
+    cursor.execute('SELECT account_services.*, serial FROM account_services LEFT JOIN services ON services.id = service_id WHERE connection_id = %s', (recurring_payment_id))
     services = cursor.fetchall()
     print('--services found: ', services)
 
     # no services found
     if len(services) < 1:
         conn.close()
-        raise Exception(
-            'err-400: no services matching the paypal subscription id found in db')
+        raise Exception('err-400: no services matching the paypal subscription id found in db')
 
     # Extract organization data (*use the id of the first service in the list since they must all belong to the same organization)
-    cursor.execute(
-        'SELECT id, name, phone, email, morning_id, country, city, address_line FROM organizations WHERE id = (SELECT owner_id FROM accounts WHERE id = %s)', services[0]['account_id'])
+    cursor.execute('SELECT id, name, phone, email, morning_id, country, city, address_line FROM organizations WHERE id = (SELECT owner_id FROM accounts WHERE id = %s)', services[0]['account_id'])
     organization = cursor.fetchone()
     print('--organization found: ', organization)
 
@@ -109,8 +108,7 @@ def handle_recurring_payment(data):
 
     try:
         # TODO: Update description somehow
-        invoice = create_tax_invoice(
-            services, organization, 'TEST DESCRIPTION')
+        invoice = create_tax_invoice(services, organization, 'TEST DESCRIPTION')
     except Exception as e:
         print('--exception in creating tax invoice--')
         print('--exception: ', e)
@@ -122,7 +120,7 @@ def handle_failure(data):
     print('--reucurring payment failed--')
 
 
-def lambda_handler(event, context):
+def legacy_main(event, context):
     """
     the main function's job is to parse the data, verify the ipn message and then check the txn_type and call the handler function accordingly
     """
@@ -144,12 +142,12 @@ def lambda_handler(event, context):
         print('--txn type: ', data['txn_type'])
 
     # Verify IPN message is legitimate against paypal servers
-    paypal_verify_url = 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     params_data = '?' + event['body-json'] + '&cmd=_notify-validate'
 
     print('--verifying against paypal servers--')
-    res = requests.post(paypal_verify_url+params_data, headers=headers)
+    res = requests.post(
+        os.environ["PAYPAL_VERIFY_URL"]+params_data, headers=headers)
     if res.status_code < 200 or res.status_code > 299:
         print('--res status code: ', res.status_code)
         print('--res content: ', res.content)
@@ -161,11 +159,11 @@ def lambda_handler(event, context):
     # Check the type of IPN message
     if data['txn_type'] == 'recurring_payment':
         print('--IPN event: recurring payment--')
-        # data['subscription_id'] = body['recurring_payment_id'][0]  # **Comment this line if testing locally
+        data['subscription_id'] = body['recurring_payment_id'][0]
         handle_recurring_payment(data)
     elif data['txn_type'] == 'recurring_payment_failed':
         print('--IPN event: subscription failure')
-        # data['subscription_id'] = body['recurring_payment_id'][0]  # **Comment this line if testing locally
+        data['subscription_id'] = body['recurring_payment_id'][0]
         handle_failure(data)
     else:
         print('--IPN event is not subscription--')
@@ -185,5 +183,38 @@ def lambda_handler(event, context):
     }
 
 
-{'body-json': 'mc_gross=1000.00&outstanding_balance=0.00&period_type=+Regular&next_payment_date=02%3A00%3A00+Jan+31%2C+2023+PST&protection_eligibility=Eligible&payment_cycle=Daily&address_status=confirmed&tax=0.00&payer_id=72CM8GPAN5KVN&address_street=%E9%F9%F8%E0%EC%E9%F1+5+%E3%E9%F8%E4+4&payment_date=23%3A27%3A05+Jan+29%2C+2023+PST&payment_status=Completed&product_name=Cloud+Platinum&charset=windows-1255&recurring_payment_id=I-CBMFG4GJDMF0&address_zip=61014&first_name=Nadav&mc_fee=35.20&address_country_code=IL&address_name=Nadav+Dagon&notify_version=3.9&amount_per_cycle=1000.00&payer_status=verified&currency_code=ILS&business=tomer%40high-t.cloud&address_country=Israel&address_city=%FA%EC-%E0%E1%E9%E1&verify_sign=A-8sxAsepLwVCTE9rkoV7Fc5m-kFAJerCEUwFC3f2pHrnaPfbu8ztjR-&payer_email=69dagod69%40gmail.com&initial_payment_amount=0.00&profile_status=Active&amount=1000.00&txn_id=48X50886Y1043502C&payment_type=instant&last_name=Dagon&address_state=&receiver_email=tomer%40high-t.cloud&payment_fee=&receiver_id=N5NH53T46TSYS&txn_type=recurring_payment&mc_currency=ILS&residence_country=IL&test_ipn=1&transaction_subject=Cloud+Platinum&payment_gross=&shipping=0.00&product_type=1&time_created=23%3A27%3A05+Jan+29%2C+2023+PST&ipn_track_id=700156eae6786',
-    'params': {'path': {}, 'querystring': {}, 'header': {'Accept': 'text/plain, application/json, application/*+json, */*', 'Accept-Encoding': 'gzip,deflate', 'Content-Type': 'application/x-www-form-urlencoded', 'Host': '1buvn89ho4.execute-api.eu-west-1.amazonaws.com', 'User-Agent': 'PayPal IPN ( https://www.paypal.com/ipn )', 'X-Amzn-Trace-Id': 'Root=1-63d77273-1fcf4ac3413aa3a409b18610', 'X-Forwarded-For': '173.0.80.116', 'X-Forwarded-Port': '443', 'X-Forwarded-Proto': 'https'}}, 'stage-variables': {}, 'context': {'account-id': '', 'api-id': '1buvn89ho4', 'api-key': '', 'authorizer-principal-id': '', 'caller': '', 'cognito-authentication-provider': '', 'cognito-authentication-type': '', 'cognito-identity-id': '', 'cognito-identity-pool-id': '', 'http-method': 'POST', 'stage': 'dev1', 'source-ip': '173.0.80.116', 'user': '', 'user-agent': 'PayPal IPN ( https://www.paypal.com/ipn )', 'user-arn': '', 'request-id': '943f12c4-8ff6-46ee-961b-51c8d52fa5a4', 'resource-id': 'a0si17', 'resource-path': '/documents/paypal'}}
+def lambda_handler(event, context):
+    # print('--event: ', event)
+
+    records = event['Records']
+    print('--number of messages: ', len(records))
+
+    for record in records:
+        body = parse_qs(record['body'])
+        print('--body: ', body)
+
+        # Verify IPN message is legitimate against paypal servers
+        print('--verifying against paypal servers--')
+        headers = {'content-type': 'application/x-www-form-urlencoded'}
+        params_data = '?' + record['body'] + '&cmd=_notify-validate'
+        res = requests.post(os.environ["PAYPAL_VERIFY_URL"]+params_data, headers=headers)
+        if res.status_code < 200 or res.status_code > 299:
+            print('--res status code: ', res.status_code)
+            print('--res content: ', res.content)
+            raise Exception('err-500: paypal verification failed')
+        print('--paypal verification: ', res.text)
+        if res.text != 'VERIFIED':
+            raise Exception('err-500: paypal verification failed')
+        
+        # Check the message type
+        if 'txn_type' not in body:
+            raise Exception('err-500: txn_type not found in message')
+        print('--message type: ', body['txn_type'])
+
+        if body['txn_type'][0] == 'recurring_payment':
+            try:
+                handle_recurring_payment(body['recurring_payment_id'][0])
+            except Exception as e:
+                raise e
+
+    return 0
