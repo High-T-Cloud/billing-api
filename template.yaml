@@ -635,12 +635,12 @@ Resources:
             RestApiId: !Ref BillingApi 
   
   # Documents
-  CreateInvoice:
+  CreateProforma:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: documents/create_invoice/
-      Description: Create An Invoice
-      FunctionName: documents-create-invoice
+      CodeUri: documents/create_proforma/
+      Description: Create A Proforma Invoice
+      FunctionName: documents-create-proforma
       Role: !Ref OutputRole
       Environment:
         Variables:
@@ -654,22 +654,7 @@ Resources:
           Type: Api
           Properties:
             Method: POST
-            Path: /documents/invoices
-            RestApiId: !Ref BillingApi
-  
-  FindInvoices:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      CodeUri: documents/find_invoices/
-      Description: Search invoices
-      FunctionName: documents-find-invoices
-      Role: !Ref OutputRole
-      Events:
-        ApiCall:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /documents/invoices/find
+            Path: /documents/proformas
             RestApiId: !Ref BillingApi
   
 

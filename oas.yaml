@@ -1466,7 +1466,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/ServiceConnectionsList"
+                $ref: "#components/schemas/AccountServicesList"
         "400":
           description: "Bad Request Error Message"
           content:
@@ -1520,6 +1520,11 @@ paths:
         - AccountServices
       summary: "Add Account Service"
       description: Add a new accoutn service      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountServiceCreate"
       responses:
         "200":
           description: Success message
@@ -1530,7 +1535,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/Error"
+                $ref: "#components/schemas/AccountService"
         "400":
           description: "Bad Request Error Message"
           content:
@@ -1557,7 +1562,7 @@ paths:
             fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'POST',
-              body: JSON.stringify({value: 12, unit: 'PER'})
+              body: JSON.stringify({value: 12, unit: 'USD'})
             })    
       x-amazon-apigateway-request-validator: Validate body, query string parameters, and headers"
       x-amazon-apigateway-integration:
@@ -1570,14 +1575,17 @@ paths:
           application/json: >
             #set($inputRoot = $input.path('$'))
             {
-              "account_id": "$input.params('id')",                            
               "user_sub": "$context.authorizer.claims.sub",
+              "account_id": "$input.params('id')",                            
               "service_id": "$inputRoot.service_id",
               "description": "$inputRoot.description",
-              "unit": "$inputRoot.unit",
               "value": "$inputRoot.value",
+              "unit": "$inputRoot.unit",
+              "discount": "$inputRoot.discount",
+              "margin": "$inputRoot.margin",
               "quantity": "$inputRoot.quantity",
-              "connection_id": "$inputRoot.connection_id"
+              "payment_source": "$inputRoot.payment_source",
+              "payment_source_id": "$inputRoot.payment_source_id"            
             }
         responses:
           default:
@@ -1733,7 +1741,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/ServiceConnectionsList"
+                $ref: "#components/schemas/AccountServicesList"
         "400":
           description: "Bad Request Error Message"
           content:
@@ -1799,7 +1807,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/ServiceConnection"        
+                $ref: "#components/schemas/AccountService"        
         "401":
           description: "Unauthorized Error Message"
           content:
@@ -1913,7 +1921,13 @@ paths:
       tags:
         - AccountServices
       summary: "Update Account Service"
-      description: Update an account service connection      
+      description: Update an account service connection 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountServiceUpdate"
+        required: true     
       responses:
         "200":
           description: Success message
@@ -1924,7 +1938,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/Error"
+                $ref: "#components/schemas/AccountService"
         "400":
           description: "Bad Request Error Message"
           content:
@@ -1970,8 +1984,11 @@ paths:
               "description": "$inputRoot.description",
               "value": "$inputRoot.value",
               "unit": "$inputRoot.unit",
-              "quantity": "$inputRoot.quantity",
-              "connection_id": "$inputRoot.connection_id"
+              "discount": "$inputRoot.discount",              
+              "margin": "$inputRoot.margin",              
+              "quantity": "$inputRoot.quantity",              
+              "payment_source": "$inputRoot.payment_source",              
+              "payment_source_id": "$inputRoot.payment_source_id"             
             }
         responses:
           default:
@@ -2032,7 +2049,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/ServiceConnection"        
+                $ref: "#components/schemas/AccountService"        
         "401":
           description: "Unauthorized Error Message"
           content:
@@ -2892,13 +2909,13 @@ paths:
 
 
   # Documents
-  /documents/invoices:
+  /documents/proformas:
     post:
-      operationId: create_invoice
+      operationId: create_proforma
       tags:
         - "Documents"
-      summary: "Create Invoice"
-      description: "Create an invoice for an organization"
+      summary: "Create Proforma Invoice"
+      description: "Create a proforma invoice for an organization"
       parameters:
       - name: "organization_id"
         in: "query"
@@ -2933,14 +2950,14 @@ paths:
       x-codeSamples:
         - lang: javascript
           source: | 
-            fetch($BASE/documents/invoices?organization_id=12, {
+            fetch($BASE/documents/proformas?organization_id=12, {
               method: 'POST',
               headers: {Authorization: 'Bearer $TOKEN'}
             })     
       x-amazon-apigateway-request-validator: "Validate query string parameters and headers"       
       x-amazon-apigateway-integration:
         httpMethod: "POST"
-        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:documents-create-invoice/invocations"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:documents-create-proforma/invocations"
         responses:
           default:
             statusCode: "200"
@@ -3080,105 +3097,6 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock" 
 
-  /documents/invoices/find:
-    get:
-      operationId: find_invoice
-      tags:
-        - "Documents"
-      summary: "Find Invoices"
-      description: "Search for invoices by name or serial"
-      parameters:
-      - name: "query"
-        in: "query"
-        required: true
-        schema:
-          type: "string"
-      responses:
-        "200":
-          description: A list of `Invoice` objects
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InvoicesList"
-        "400":
-          description: "Bad Request Error Message"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: "Unauthorized Error Message"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"      
-      security:
-      - billing-authorizer: []
-      x-codeSamples:
-        - lang: javascript
-          source: | 
-            fetch($BASE/documents/invoices/find?query=Tact, {
-              headers: {Authorization: 'Bearer $TOKEN'}
-            })     
-      x-amazon-apigateway-request-validator: "Validate query string parameters and headers"       
-      x-amazon-apigateway-integration:
-        httpMethod: "POST"
-        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:documents-find-invoices/invocations"
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-          err-401:
-            statusCode: "401"
-          err-400:
-            statusCode: "400"
-        requestTemplates:
-          application/json: |            
-            {
-              "user_sub": "$context.authorizer.claims.sub",
-              "query": "$input.params('query')"
-            }
-        passthroughBehavior: "when_no_templates"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws"
-    options:
-      tags:
-      - "Documents"
-      responses:
-        "200":
-          description: "200 response"
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
-            Access-Control-Allow-Methods:
-              schema:
-                type: "string"
-            Access-Control-Allow-Headers:
-              schema:
-                type: "string"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Empty"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"  
- 
  
 components:
   parameters:
@@ -3285,8 +3203,8 @@ components:
         sub: "55-yy-66"
         username: "yoav"
         email: "yoav@tact.com"
-    Invoice:
-      title: "Invoice"
+    Proforma:
+      title: "Proforma"
       type: "object"
       properties:
         serial:
@@ -3299,14 +3217,14 @@ components:
           type: number
         due:
           type: number
-    InvoicesList:
-      title: InvoicesList
+    ProformasList:
+      title: ProformasList
       type: object
       properties:
-        Invoices:
+        Proformas:
           type: array
           items:
-            $ref: "#/components/schemas/Invoice"
+            $ref: "#/components/schemas/Proforma"
     AccountsList:
       title: "AccountsList"
       type: "object"
@@ -3486,12 +3404,52 @@ components:
         description: "Consulting"
         value: 500.5
         unit: "USD"
-    ServiceConnection:
-      title: "ServiceConnection"
+    AccountServiceUpdate:
+      title: "AccountServiceUpdate"
       type: "object"
-      properties:
+      properties: 
         id:
-          type: "number"
+          type: number               
+        description:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        discount:
+          type: number
+          maximum: 100
+          minimum: 0
+        margin:
+          type: number
+          maximum: 100
+          minimum: 0
+        quantity:
+          type: number
+          minimum: 1
+        payment_source:
+          type: string
+          enum:
+            - manual
+            - paypal
+        payment_source_id:
+          type: string
+          description: Null if payment_source is `manual`
+      required: ["value"]
+      example:
+        id: 5
+        description: Consulting
+        value: 500
+        unit: NIS
+        discount: 20
+        margin: 12
+        quantity: 1
+        payment_source: paypal
+        payment_source_id: I-XX-537
+    AccountServiceCreate:
+      title: "AccountServiceCreate"
+      type: "object"
+      properties:        
         service_id:
           type: "number"        
         account_id:
@@ -3499,9 +3457,50 @@ components:
         description:
           type: string
         value:
-          type: string
+          type: number
         unit:
           type: string
+        discount:
+          type: number
+          maximum: 100
+          minimum: 0
+        margin:
+          type: number
+          maximum: 100
+          minimum: 0
+        quantity:
+          type: number
+          minimum: 1
+        payment_source:
+          type: string
+          enum:
+            - manual
+            - paypal
+        payment_source_id:
+          type: string
+          description: Null if payment_source is `manual`
+      required: ["value"]
+      example:
+        service_id: 3
+        account_id: 8
+        description: Consulting
+        value: 500
+        unit: NIS
+        discount: 20
+        margin: 12
+        quantity: 1
+        payment_source: paypal
+        payment_source_id: I-XX-537
+    AccountService:
+      allOf:
+        - $ref: "#/components/schemas/AccountServiceCreate"
+      title: "AccountService"
+      type: "object"
+      properties:
+        id:
+          type: "number"        
+        last_update:
+          type: string        
       example:
         id: 5
         service_id: 3
@@ -3509,12 +3508,18 @@ components:
         description: Consulting
         value: 500
         unit: NIS
-    ServiceConnectionsList:
-      title: ServiceConnectionsList
-      description: A list of `account_service` objects
+        discount: 20
+        margin: 12
+        quantity: 1
+        payment_source: paypal
+        payment_source_id: I-XX-537
+        last_update: "2023-06-06 16:01:24"    
+    AccountServicesList:
+      title: AccountServicesList
+      description: A list of `AccountService` objects
       type: array
       items:
-        $ref: "#/components/schemas/ServiceConnection"
+        $ref: "#/components/schemas/AccountService"
         
   securitySchemes:
     billing-authorizer:

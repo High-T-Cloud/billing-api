@@ -1,12 +1,5 @@
 {
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "organization_id": 24,
-  "id": 24,
-  "account_id": 24,
-  "status": false,
-  "active_only": "true",
-  "query": "",
-  "language": "he",
-  "currency": "ILS",
-  "description": "testing locally"
+  "account_id": 26,
+  "organization_id": 28
 }

@@ -2,6 +2,9 @@ from os import environ
 import utils
 
 def lambda_handler(event, context):
+    # Consts
+    PAYMENT_SOURCE_OPTIONS = ['manual', 'paypal']
+
     print('--event: ', event)
 
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
@@ -26,15 +29,26 @@ def lambda_handler(event, context):
     for key in service:
         if key in event and event[key] != '':
             service[key] = event[key]
-    print('--New service: ', service)    
+    print('--New service: ', service)   
+
+    # Validate given data    
+    if service['payment_source']:
+        if service['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
+            raise Exception('err-400: invalid payment source')
+    if service['discount']:
+        if int(service['discount']) > 100 or int(service['discount']) < 0:
+            raise Exception('err-400: invalid discount value')
+    if service['margin']:
+        if int(service['margin']) > 100 or int(service['margin']) < 0:
+            raise Exception('err-400: invalid margin value')
             
-    params = (service['description'], service['value'], service['unit'], service['id'])
-    cursor.execute('UPDATE account_services SET description=%s, value=%s, unit=%s WHERE id = %s', params)
-    
+    # Save changes in DB
+    new_service_params = (service['description'], service['value'], service['unit'], service['quantity'],service['discount'], service['margin'], service['payment_source'], service['payment_source_id'],service['id'])
+    cursor.execute('UPDATE account_services SET description=%s, value=%s, unit=%s, quantity=%s, discount=%s, margin=%s, payment_source=%s, payment_source_id=%s WHERE id = %s', new_service_params)    
     conn.commit()
     conn.close()
 
-    # Serialize datetime column
+    # Serialize datetime column for output
     service['last_update'] = service['last_update'].isoformat()
     
     return service
