@@ -2,6 +2,7 @@
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
   "account_id": 26,
   "organization_id": 28,
-  "query": "abu",
-  "active": "true"
+  "name": "Test Working",
+  "provider_id": 3,
+  "account_number": 43598743
 }

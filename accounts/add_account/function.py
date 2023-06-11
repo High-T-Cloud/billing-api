@@ -33,13 +33,18 @@ def lambda_handler(event, context):
     }
     # Merge new account with event data
     for key in new_account:
-        new_account[key] = event[key]
+        if key in event:
+            new_account[key] = event[key]
 
     new_account['owner_id'] = event['organization_id']
 
-    # Set payer account's default to account number ** DEPRECATED **
-    # if new_account['payer_account'] == '':
-    #     new_account['payer_account'] = new_account['account_number']
+    # Validate input Data
+    if new_account['name'] == '' or new_account['account_number'] == '' or new_account['provider_id'] == '':
+        raise Exception('err-400: invalid input data')
+
+    # Set payer account's default to account number
+    if new_account['payer_account'] == '':
+        new_account['payer_account'] = new_account['account_number']
     
     print('--new acocunt: ', new_account)
 
