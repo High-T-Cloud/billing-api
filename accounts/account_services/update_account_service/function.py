@@ -43,8 +43,8 @@ def lambda_handler(event, context):
             raise Exception('err-400: invalid margin value')
             
     # Save changes in DB
-    new_service_params = (service['description'], service['value'], service['unit'], service['quantity'],service['discount'], service['margin'], service['payment_source'], service['payment_source_id'],service['id'])
-    cursor.execute('UPDATE account_services SET description=%s, value=%s, unit=%s, quantity=%s, discount=%s, margin=%s, payment_source=%s, payment_source_id=%s WHERE id = %s', new_service_params)    
+    new_service_params = (service['description'], service['value'], service['currency'], service['quantity'],service['discount'], service['margin'], service['payment_source'], service['payment_source_id'],service['id'])
+    cursor.execute('UPDATE account_services SET description=%s, value=%s, currency=%s, quantity=%s, discount=%s, margin=%s, payment_source=%s, payment_source_id=%s WHERE id = %s', new_service_params)    
     conn.commit()
     conn.close()
 

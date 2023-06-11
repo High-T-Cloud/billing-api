@@ -15,7 +15,7 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')        
     
     # build empty organization
-    new_organization = {'name': None, 'business_id': None, 'phone': None, 'email': None,'morning_id': None, 'country': None, 'city': None, 'address_line': None}
+    new_organization = {'name': None, 'business_id': None, 'phone': None, 'email': None,'contact_name': None,'morning_id': None, 'country': None, 'city': None, 'address_line': None, 'pref_lang': None, 'pref_currency': None}
 
     # merge empty organization with event organization
     for key in new_organization:
@@ -23,8 +23,13 @@ def lambda_handler(event, context):
             new_organization[key] = event[key]                        
     print('--New Organization: ', new_organization)        
 
-    cursor.execute('INSERT INTO organizations (name, business_id, phone, email, morning_id, country, city, address_line) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', tuple(new_organization.values()))
-    conn.commit()    
+    try:
+        cursor.execute('INSERT INTO organizations (name, business_id, phone, email, contact_name, morning_id, country, city, address_line, pref_lang, pref_currency) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', tuple(new_organization.values()))
+        conn.commit()    
+    except Exception as e:
+        print('--Inserting to DB Failed, exception: ', e)
+        conn.close()
+        raise e
 
     # -- Create a new cognito group for the organizations --
 

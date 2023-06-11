@@ -333,7 +333,22 @@ Resources:
           Properties:
             Method: DELETE
             Path: /accounts/{id}
-            RestApiId: !Ref BillingApi 
+            RestApiId: !Ref BillingApi
+
+  ListPayerAccounts:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: accounts/list_payer_accounts/
+      Description: List payer account numbers
+      FunctionName: accounts-list-payer-accounts
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /accounts/payers
+            RestApiId: !Ref BillingApi  
 
 
   # --Account Services
@@ -464,7 +479,7 @@ Resources:
             Path: /accounts/{id}/services/refresh
             RestApiId: !Ref BillingApi
 
-  # Users
+  # --Users
   ListOrganizationUsers:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -556,7 +571,7 @@ Resources:
             Path: /users/{sub}/admin
             RestApiId: !Ref BillingApi    
 
-  # Services
+  # --Services
   ListServices:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -618,7 +633,7 @@ Resources:
             RestApiId: !Ref BillingApi 
 
 
-  # Providers  
+  # --Providers  
   ListProviders:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -634,7 +649,7 @@ Resources:
             Path: /providers
             RestApiId: !Ref BillingApi 
   
-  # Documents
+  # --Documents
   CreateProforma:
     Type: 'AWS::Serverless::Function'
     Properties:

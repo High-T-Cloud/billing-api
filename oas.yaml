@@ -129,13 +129,16 @@ paths:
               {
                 "user_sub": "$context.authorizer.claims.sub",
                 "name": "$inputRoot.name",
-                "phone": "$inputRoot.phone",
                 "business_id": "$inputRoot.business_id",
-                "morning_id": "$inputRoot.morning_id",
+                "phone": "$inputRoot.phone",
                 "email": "$inputRoot.email",
+                "contact_name": "$inputRoot.contact_name",
                 "country": "$inputRoot.country",
                 "city": "$inputRoot.city",
                 "address_line": "$inputRoot.address_line"                
+                "morning_id": "$inputRoot.morning_id",
+                "pref_lang": "$inputRoot.pref_lang",
+                "pref_currency": "$inputRoot.pref_currency"
               }
             
         responses:
@@ -639,13 +642,16 @@ paths:
             {              
               "user_sub": "$context.authorizer.claims.sub",
               "organization_id": "$input.params('id')",
-              "phone": "$inputRoot.phone",
               "business_id": "$inputRoot.business_id",
+              "phone": "$inputRoot.phone",
               "email": "$inputRoot.email",
+              "contact_name": "$inputRoot.contact_name",
               "country": "$inputRoot.country",
               "city": "$inputRoot.city",
               "address_line": "$inputRoot.address_line",
               "morning_id": "$inputRoot.morning_id"
+              "pref_lang": "$inputRoot.pref_lang"
+              "pref_currency": "$inputRoot.pref_currency"
             }
         responses:
           default:
@@ -1064,6 +1070,60 @@ paths:
               "user_sub": "$context.authorizer.claims.sub",
               "organization_id": "$input.params('organization_id')",
               "provider_info": "$input.params('provider_info')"
+            }
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+  
+  /accounts/payers:
+    get:
+      tags:
+      - "Accounts"
+      summary: "List Payer Accounts"
+      description: "Get a list of payer account numbers"
+      operationId: "list_payer_accounts"
+      responses:
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayerAccountsList"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content: {}
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('BASE/accounts/payers', {headers:\
+          \ {Authorization: 'Bearer $TOKEN'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-list-payer-accounts/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          'err-401:':
+            statusCode: "401"
+        requestTemplates:
+          application/json: |
+            {
+              "user_sub": "$context.authorizer.claims.sub"
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -1562,7 +1622,7 @@ paths:
             fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'POST',
-              body: JSON.stringify({value: 12, unit: 'USD'})
+              body: JSON.stringify({value: 12, currency: 'USD'})
             })    
       x-amazon-apigateway-request-validator: Validate body, query string parameters, and headers"
       x-amazon-apigateway-integration:
@@ -1580,7 +1640,7 @@ paths:
               "service_id": "$inputRoot.service_id",
               "description": "$inputRoot.description",
               "value": "$inputRoot.value",
-              "unit": "$inputRoot.unit",
+              "currency": "$inputRoot.currency",
               "discount": "$inputRoot.discount",
               "margin": "$inputRoot.margin",
               "quantity": "$inputRoot.quantity",
@@ -1965,7 +2025,7 @@ paths:
             fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'PATCH',
-              body: JSON.stringify({value: 12, unit: 'PER'})
+              body: JSON.stringify({value: 12, currency: 'ILS'})
             })    
       x-amazon-apigateway-request-validator: Validate body, query string parameters, and headers"
       x-amazon-apigateway-integration:
@@ -1983,7 +2043,7 @@ paths:
               "service_id": "$input.params('sid')",
               "description": "$inputRoot.description",
               "value": "$inputRoot.value",
-              "unit": "$inputRoot.unit",
+              "currency": "$inputRoot.currency",
               "discount": "$inputRoot.discount",              
               "margin": "$inputRoot.margin",              
               "quantity": "$inputRoot.quantity",              
@@ -2592,7 +2652,7 @@ paths:
       - lang: "javascript"
         source: "fetch('$BASE/admin/services', {\nmethod: 'POST',\nheaders: {Authorization:\
           \ 'Bearer $TOKEN'},\nbody: JSON.stringify({\nserial: 'UUI-08', description:\
-          \ 'Consulting', value: 500, unit: 'USD'})})"
+          \ 'Consulting', value: 500, currency: 'USD'})})"
       x-amazon-apigateway-request-validator: "Validate body, query string parameters,\
         \ and headers"
       x-amazon-apigateway-integration:
@@ -2614,7 +2674,7 @@ paths:
                 "user_sub": "$context.authorizer.claims.sub",
                 "serial"  : "$inputRoot.serial",
                 "description": "$inputRoot.description",
-                "unit"  : "$inputRoot.unit",
+                "currency"  : "$inputRoot.currency",
                 "value"  : "$inputRoot.value",
                 "data_source": "$inputRoot.data_source"
               } 
@@ -2807,7 +2867,7 @@ paths:
       - lang: "javascript"
         source: "fetch('$BASE/admin/services/5', {\nmethod: 'PATCH',\nheaders: {Authorization:\
           \ 'Bearer $TOKEN'},\nbody: JSON.stringify({\nserial: 'UUI-08', description:\
-          \ 'Consulting', value: 500, unit: 'USD'})})"
+          \ 'Consulting', value: 500, currency: 'USD'})})"
       x-amazon-apigateway-request-validator: "Validate body, query string parameters,\
         \ and headers"
       x-amazon-apigateway-integration:
@@ -2821,7 +2881,7 @@ paths:
                 "id": "$input.params('id')",
                 "serial"  : "$inputRoot.serial",
                 "description": "$inputRoot.description",
-                "unit"  : "$inputRoot.unit",
+                "currency"  : "$inputRoot.currency",
                 "value"  : "$inputRoot.value",
                 "data_source": "$inputRoot.data_source"
               } 
@@ -3165,8 +3225,6 @@ components:
         image_source: "https://high-t.co.il/images/logo.svg"
     Organization:
       title: "Organization"
-      required:
-      - "name"
       type: "object"
       properties:
         id:
@@ -3253,7 +3311,9 @@ components:
         phone:
           type: "string"
         email:          
-          type: "string"        
+          type: "string"    
+        contact_name:
+          type: string    
         country:
           type: "string"
         city:
@@ -3261,6 +3321,10 @@ components:
         address_line:
           type: "string"
         morning_id:
+          type: "string"
+        pref_lang:
+          type: "string"
+        pref_currency:
           type: "string"
     Error:
       title: "Error Schema"
@@ -3280,14 +3344,14 @@ components:
           type: "string"
         value:
           type: "number"
-        unit:
+        currency:
           type: "string"
       example:
         id: 2
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
     ProvidersList:
       title: "ProvidersList"
       type: "object"
@@ -3379,12 +3443,12 @@ components:
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
       - id: 3
         serial: "UUI-07"
         description: "Consolidated Billing"
         value: 7
-        unit: "PER"
+        currency: "ILS"
     ServiceCreate:
       title: "ServiceCreate"
       type: "object"
@@ -3395,7 +3459,7 @@ components:
           type: "string"
         value:
           type: "number"
-        unit:
+        currency:
           type: "string"
         data_source:
           type: string
@@ -3403,7 +3467,7 @@ components:
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
     AccountServiceUpdate:
       title: "AccountServiceUpdate"
       type: "object"
@@ -3414,7 +3478,7 @@ components:
           type: string
         value:
           type: number
-        unit:
+        currency:
           type: string
         discount:
           type: number
@@ -3440,7 +3504,7 @@ components:
         id: 5
         description: Consulting
         value: 500
-        unit: NIS
+        currency: ILS
         discount: 20
         margin: 12
         quantity: 1
@@ -3458,7 +3522,7 @@ components:
           type: string
         value:
           type: number
-        unit:
+        currency:
           type: string
         discount:
           type: number
@@ -3485,7 +3549,7 @@ components:
         account_id: 8
         description: Consulting
         value: 500
-        unit: NIS
+        currency: NIS
         discount: 20
         margin: 12
         quantity: 1
@@ -3507,7 +3571,7 @@ components:
         account_id: 8
         description: Consulting
         value: 500
-        unit: NIS
+        currency: NIS
         discount: 20
         margin: 12
         quantity: 1
@@ -3520,6 +3584,15 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/AccountService"
+    PayerAccountsList:
+      title: PayerAccountsList
+      description: a list of payer account numbers
+      type: array
+      items:
+        type: string        
+        
+        
+          
         
   securitySchemes:
     billing-authorizer:
@@ -3657,7 +3730,7 @@ x-amazon-apigateway-documentation:
       - lang: "javascript"
         source: "fetch('$BASE/admin/services/5', {\nmethod: 'PATCH',\nheaders: {Authorization:\
           \ 'Bearer $TOKEN'},\nbody: JSON.stringify({\nserial: 'UUI-08', description:\
-          \ 'Consulting', value: 500, unit: 'USD'})})"
+          \ 'Consulting', value: 500, currency: 'USD'})})"
   - location:
       type: "METHOD"
       path: "/admin/services"
@@ -3683,7 +3756,7 @@ x-amazon-apigateway-documentation:
       - lang: "javascript"
         source: "fetch('$BASE/admin/services', {\nmethod: 'POST',\nheaders: {Authorization:\
           \ 'Bearer $TOKEN'},\nbody: JSON.stringify({\nserial: 'UUI-08', description:\
-          \ 'Consulting', value: 500, unit: 'USD'})})"
+          \ 'Consulting', value: 500, currency: 'USD'})})"
   - location:
       type: "METHOD"
       path: "/clients"
@@ -3885,7 +3958,7 @@ x-amazon-apigateway-documentation:
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
   - location:
       type: "MODEL"
       name: "ServiceCreate"
@@ -3894,7 +3967,7 @@ x-amazon-apigateway-documentation:
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
   - location:
       type: "MODEL"
       name: "ServicesList"
@@ -3904,12 +3977,12 @@ x-amazon-apigateway-documentation:
         serial: "UUI-05"
         description: "Consulting"
         value: 500.5
-        unit: "USD"
+        currency: "USD"
       - id: 3
         serial: "UUI-07"
         description: "Consolidated Billing"
         value: 7
-        unit: "PER"
+        currency: "ILS"
   - location:
       type: "MODEL"
       name: "User"

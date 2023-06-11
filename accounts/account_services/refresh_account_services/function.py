@@ -27,7 +27,7 @@ def get_services_g1(cursor, conn, cntr_endpoint:str, account_number:str, account
             'service_id': account_service['service_id'],
             'description': account_service['description'],
             'value': invoice['amount'],
-            'unit': invoice['currency'],
+            'currency': invoice['currency'],
             'margin': account_service['margin'],
             'quantity': account_service['quantity'],
         }
@@ -45,14 +45,9 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
     res = requests.get(url, headers=cntr_headers)
     print('--cntr status code: ', res.status_code)
     subs = res.json()
-    
-
-    # **TEMP - LOCAL TESTING**
-    # subs = [{"name": "accounts/C049ub8g4/customers/Sp6yGGpkwsOOpI/entitlements/SVlop37e0VOXCR", "quantity": 6, "serial": "UM8oR33G7oGVqB", "margin": 0, "unit": "USD", "value": 6.0}, {"name": "accounts/C049ub8g4/customers/Sp6yGGpkwsOOpI/entitlements/SVzh457QPqLcOj", "quantity": 102, "serial": "SRRpRk3rG7zvB3", "margin": 0.2, "unit": "USD", "value": 4.8}, {"name": "accounts/C049ub8g4/customers/Sp6yGGpkwsOOpI/entitlements/SqCVDe93rtExOL", "quantity": 2, "serial": "UR6wZ33Nj7REKw", "margin": 0, "unit": "USD", "value": 14.0}]
 
     # Construct accounts services from the google data
     account_services = []
-
     for sub in subs:
         # Get the releveant service for the subscription
         cursor.execute('SELECT id, description FROM services WHERE serial = %s', sub['serial'])
@@ -63,7 +58,7 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
             'service_id': service['id'],
             'description': service['description'],
             'value': sub['value'],
-            'unit': sub['unit'],
+            'currency': sub['currency'],
             'margin': sub['margin'],
             'quantity': sub['quantity'],
         }
@@ -79,7 +74,7 @@ def lambda_handler(event, context):
     connector groups: The model for handling fetching the data for each connector
     `Group1`: get the most recent invoice for this cloud provider and insert one account service with the full montly bill.
     `Group 2`: Get a list of all servics paid for in the provider and insert an account service for each of them.
-    When creating an account_service object the dictionary order MUST be `{account_id, service_id, description, value, unit, quantity, margin}`
+    When creating an account_service object the dictionary order MUST be `{account_id, service_id, description, value, currency, quantity, margin}`
     """
     print('--event: ', event)
 
@@ -122,7 +117,7 @@ def lambda_handler(event, context):
     
     for service in account_services:
         print('--inserting service: ', service)
-        cursor.execute('INSERT INTO account_services (account_id, service_id, description, value, unit, margin, quantity) VALUES (%s, %s, %s, %s, %s, %s, %s)', list(service.values()))
+        cursor.execute('INSERT INTO account_services (account_id, service_id, description, value, currency, margin, quantity) VALUES (%s, %s, %s, %s, %s, %s, %s)', list(service.values()))
     conn.commit()
     print('--inserted new services--')
 

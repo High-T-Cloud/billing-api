@@ -44,7 +44,7 @@ def lambda_handler(event, context):
             'catalogNum': s['serial'],
             'description': s['description'],
             'price': float(s['value']),
-            'currency': s['unit'],
+            'currency': s['currency'],
             'quantity': s['quantity']
         }        
         income.append(item)

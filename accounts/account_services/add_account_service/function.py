@@ -26,14 +26,14 @@ def lambda_handler(event, context):
     print('--validated service id--')
 
     # Create a new account service
-    new_service = {'service_id': None, 'account_id': None, 'description': None, 'value': None, 'unit': None, 'quantity': None, 'discount': None, 'margin': None, 'payment_source': None, 'payment_source_id': None}
+    new_service = {'service_id': None, 'account_id': None, 'description': None, 'value': None, 'currency': None, 'quantity': None, 'discount': None, 'margin': None, 'payment_source': None, 'payment_source_id': None}
     for key in event:
         if key in new_service and event[key] != '':
             new_service[key] = event[key] 
   
     print('--new account service: ', new_service)
     
-    # TODO: validate currency code (unit)
+    # TODO: validate currency code
 
     # Validate given data    
     if new_service['payment_source']:
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
     print('--passed validation--')
     
     # Insert to DB
-    cursor.execute('INSERT INTO account_services (service_id, account_id, description, value, unit, quantity, discount, margin, payment_source, payment_source_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', tuple(new_service.values()))
+    cursor.execute('INSERT INTO account_services (service_id, account_id, description, value, currency, quantity, discount, margin, payment_source, payment_source_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', tuple(new_service.values()))
     conn.commit()
     conn.close()
 

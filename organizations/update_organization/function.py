@@ -25,10 +25,13 @@ def lambda_handler(event, context):
         'business_id': current_organization['business_id'],
         'phone': current_organization['phone'],
         'email': current_organization['email'],
+        'contact_name': current_organization['contact_name'],
         'country': current_organization['country'],
         'city': current_organization['city'],
         'address_line': current_organization['address_line'],
         'morning_id': current_organization['morning_id'],
+        'pref_lang': current_organization['pref_lang'],
+        'pref_currency': current_organization['pref_currency'],
         'id': current_organization['id']
     }
     for key in current_organization:
@@ -38,9 +41,14 @@ def lambda_handler(event, context):
     print('--New organization: ', new_organization)
     
     # update organization in DB
-    cursor.execute('UPDATE organizations SET business_id=%s, phone=%s, email=%s, country=%s, city=%s, address_line=%s, morning_id=%s WHERE id = %s', tuple(new_organization.values()))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute('UPDATE organizations SET business_id=%s, phone=%s, email=%s, contact_name=%s, country=%s, city=%s, address_line=%s, morning_id=%s, pref_lang=%s, pref_currency=%s WHERE id = %s', tuple(new_organization.values()))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print('--Updating DB failed, exception: ', e)
+        conn.close()
+        raise e
     
     return {'message': 'organization updated'}
     

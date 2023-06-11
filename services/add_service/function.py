@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # function logic
-    new_service = {'serial': None, 'description': None, 'value': None, 'unit': None, 'data_source': None}
+    new_service = {'serial': None, 'description': None, 'value': None, 'currency': None, 'data_source': None}
     
     # create the new secrvice
     for key in new_service:
@@ -24,10 +24,10 @@ def lambda_handler(event, context):
     # --Cntr data source--
     if new_service['data_source'] == 'cntr':
         new_service['value'] = None
-        new_service['unit'] = None  # Currency will be determined according to cntr data when creating invoice
+        new_service['currency'] = None  # Currency will be determined according to cntr data when creating invoice
     
-    cursor.execute('INSERT INTO services (serial, description, value, unit, data_source) VALUES (%s,%s,%s,%s, %s)',
-        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['data_source']))
+    cursor.execute('INSERT INTO services (serial, description, value, currency, data_source) VALUES (%s,%s,%s,%s, %s)',
+        (new_service['serial'], new_service['description'], new_service['value'], new_service['currency'], new_service['data_source']))
     conn.commit()
     conn.close()
     

@@ -7,6 +7,7 @@ import requests
 # Paypal IPN Txn types:
 # 'recurring_payment_profile_cancel' - Subscription cancled by client
 # I-E918601SMY45
+# product_name
 
 def create_tax_invoice(services: list, organization: dict, invoice_description: str) -> dict:
     """
@@ -26,7 +27,7 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
 
     # Format each service in the services list to match morning api
     # Calculate the sum of values for all the services and add it to the payment part in the payload
-    # *** TEMPORARILY CALCULATE THE SUM AS IF ALL THE SERVICES HAVE THE SAME UNIT AND SET THE UNIT IN THE PAYMENT ACCORDINGLY ***
+    # *** TEMPORARILY CALCULATE THE SUM AS IF ALL THE SERVICES HAVE THE SAME currency AND SET THE currency IN THE PAYMENT ACCORDINGLY ***
     income = []
     income_sum = 0
     for service in services:
@@ -35,7 +36,7 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
             'description': service['description'],
             'quantity': service['quantity'],
             'price': service['value'],
-            'currency': service['unit'],
+            'currency': service['currency'],
             # TODO: Add tax options
             'vatType': 1
         }
@@ -47,7 +48,7 @@ def create_tax_invoice(services: list, organization: dict, invoice_description: 
         'date': '2022-12-19',  # TODO: Add dynamic dates
         'type': 5,  # '5': Paypal
         'price': income_sum,
-        'currency': services[0]['unit']
+        'currency': services[0]['currency']
     }]
 
     # Create payload

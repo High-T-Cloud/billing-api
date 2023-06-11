@@ -29,11 +29,11 @@ def lambda_handler(event, context):
     # --Cntr data source--
     if new_service['data_source'] == 'cntr':
         new_service['value'] = None
-        new_service['unit'] = None  # Currency will be determined according to cntr data when creating invoice
+        new_service['currency'] = None  # Currency will be determined according to cntr data when creating invoice
     
     # update service
-    cursor.execute('UPDATE services SET serial=%s, description=%s, value=%s, unit=%s, data_source=%s WHERE id = %s', 
-        (new_service['serial'], new_service['description'], new_service['value'], new_service['unit'], new_service['data_source'], new_service['id']))
+    cursor.execute('UPDATE services SET serial=%s, description=%s, value=%s, currency=%s, data_source=%s WHERE id = %s', 
+        (new_service['serial'], new_service['description'], new_service['value'], new_service['currency'], new_service['data_source'], new_service['id']))
     
     conn.commit()
     conn.close()

@@ -13,6 +13,7 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-401: user access denied')
 
+    # Make a request to Morning API
     token = utils.get_morning_token(environ['MORNING_SECRET_ARN'])
     url = 'https://sandbox.d.greeninvoice.co.il/api/v1/clients/search'
     headers = {'Authorization': 'Bearer ' + token}
@@ -31,8 +32,20 @@ def lambda_handler(event, context):
         
     # Format the response
     clients = []
-    for client in res['items']:                
-        clients.append({'id': client['id'], 'name': client['name'], 'active': client['active']})
+    for client in res['items']:   
+        new_client = {
+            'id': client['id'],
+            'name': client['name'],
+            'active': client['active'],
+            'phone': '',
+            'contact_name': client['contactPerson'],
+            'email': client['emails'][0],
+            'country': client['country']
+        }     
+        if 'phone' in client:
+            new_client['phone'] = client['phone']
+
+        clients.append(new_client)
     
     return clients
         
