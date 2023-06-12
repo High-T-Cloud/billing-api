@@ -13,7 +13,8 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # Get data from DB
-    cursor.execute('SELECT name, payer_account AS number FROM accounts WHERE payer_account IS NOT NULL')
+    # Id = 1 : AWS provider
+    cursor.execute('SELECT name, payer_account AS number FROM accounts WHERE payer_account IS NOT NULL AND provider_id = 1')
     payer_accounts = cursor.fetchall()
     
 
