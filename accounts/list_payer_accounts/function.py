@@ -1,6 +1,5 @@
 import utils
 import os
-import pymysql
 
 def lambda_handler(event, context):
     print('--event: ', event)
@@ -14,10 +13,8 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
     
     # Get data from DB
-    cursor.execute('SELECT payer_account FROM accounts WHERE payer_account IS NOT NULL')
+    cursor.execute('SELECT name, payer_account AS number FROM accounts WHERE payer_account IS NOT NULL')
     payer_accounts = cursor.fetchall()
-
-    # Format data
-    payer_accounts = [item['payer_account'] for item in payer_accounts]
+    
 
     return payer_accounts
