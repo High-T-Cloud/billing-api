@@ -135,7 +135,7 @@ paths:
                 "contact_name": "$inputRoot.contact_name",
                 "country": "$inputRoot.country",
                 "city": "$inputRoot.city",
-                "address_line": "$inputRoot.address_line"                
+                "address_line": "$inputRoot.address_line",              
                 "morning_id": "$inputRoot.morning_id",
                 "pref_lang": "$inputRoot.pref_lang",
                 "pref_currency": "$inputRoot.pref_currency"
@@ -649,8 +649,8 @@ paths:
               "country": "$inputRoot.country",
               "city": "$inputRoot.city",
               "address_line": "$inputRoot.address_line",
-              "morning_id": "$inputRoot.morning_id"
-              "pref_lang": "$inputRoot.pref_lang"
+              "morning_id": "$inputRoot.morning_id",
+              "pref_lang": "$inputRoot.pref_lang",
               "pref_currency": "$inputRoot.pref_currency"
             }
         responses:
