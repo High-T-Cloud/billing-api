@@ -1,8 +1,11 @@
 {
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "account_id": 26,
-  "organization_id": 28,
-  "name": "Test Working",
-  "provider_id": 3,
-  "account_number": 43598743
+  "proforma_id": 1,
+  "payment_date": "2023-06-20",
+  "id": 320,
+  "organization_id": 29,
+  "description" : "testing new proforma",
+  "currency": "ILS",
+  "language": "he",
+  "accounts": [28, 29]
 }

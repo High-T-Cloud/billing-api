@@ -1,0 +1,123 @@
+{
+    "id": "44f259c3-7c8f-45f2-b235-c03a29498eb7",
+    "type": 320,
+    "number": 60015,
+    "currency": "ILS",
+    "date": "2023-06-29",
+    "createdAt": 1688040576000,
+    "subtotal": 2414.6,
+    "rounding": false,
+    "tax": [
+        {
+            "name": "VAT",
+            "rate": 0.17,
+            "total": 410.48
+        }
+    ],
+    "total": 2825.08,
+    "description": "testing new proforma",
+    "remarks": "חשבונית מס / קבלה עבור חשבון עסקה 40024",
+    "reverseCharge": false,
+    "recipient": {
+        "id": "37b520d5-a53b-4197-b351-6d35e409bd3e",
+        "name": "Abu Mussa",
+        "taxId": "314959529",
+        "department": "",
+        "address": "",
+        "city": "",
+        "zip": "",
+        "country": "IL",
+        "phone": "0545519580",
+        "mobile": "",
+        "emails": [
+            "tomerzx@gmail.com"
+        ]
+    },
+    "items": [
+        {
+            "description": "Google Drive 200GB License",
+            "sku": "UR6wZ33Nj7REKw",
+            "quantity": 2,
+            "price": 14,
+            "currency": "USD",
+            "taxIncludedInPrice": false,
+            "tax": [
+                {
+                    "name": "VAT",
+                    "rate": 0.17
+                }
+            ],
+            "foreignCurrencyRate": {
+                "ILS": 3.679
+            }
+        },
+        {
+            "description": "Google workspaces business starter license",
+            "sku": "SRRpRk3rG7zvB3",
+            "quantity": 102,
+            "price": 5.76,
+            "currency": "USD",
+            "taxIncludedInPrice": false,
+            "tax": [
+                {
+                    "name": "VAT",
+                    "rate": 0.17
+                }
+            ],
+            "foreignCurrencyRate": {
+                "ILS": 3.679
+            }
+        },
+        {
+            "description": "Google Drive 50GB License",
+            "sku": "UM8oR33G7oGVqB",
+            "quantity": 6,
+            "price": 6,
+            "currency": "USD",
+            "taxIncludedInPrice": false,
+            "tax": [
+                {
+                    "name": "VAT",
+                    "rate": 0.17
+                }
+            ],
+            "foreignCurrencyRate": {
+                "ILS": 3.679
+            }
+        },
+        {
+            "description": "Google workspaces business starter license",
+            "sku": "SRRpRk3rG7zvB3",
+            "quantity": 1,
+            "price": 4.8,
+            "currency": "USD",
+            "taxIncludedInPrice": false,
+            "tax": [
+                {
+                    "name": "VAT",
+                    "rate": 0.17
+                }
+            ],
+            "foreignCurrencyRate": {
+                "ILS": 3.679
+            }
+        }
+    ],
+    "transactions": [
+        {
+            "id": "173b6908-5505-487b-813a-d791000e81e8",
+            "price": 2825.08,
+            "currency": "ILS",
+            "paymentMethod": {
+                "type": "wire-transfer"
+            }
+        }
+    ],
+    "files": {
+        "signed": true,
+        "downloadLinks": {
+            "he": "https://sandbox.d.greeninvoice.co.il/api/v1/documents/download?d=EVmWi2qBnsEMes3BhIdvpJ15a%2BsM1z9A1s4gJEJwXfF7k4h%2F9Yj6%2FUX%2Fwi1rc3%2Fu%2BD44J7t17uJLopxvfdPS2ksq4ZoiklmZ8uVvk232pBano8GZYbeRFdyogCvjoa%2FLnoti3m0mh60PO6wcziBjekGXaIkNg8gm1739fbnSQQWS%2FeTYYP67IHi8g9%2BsUHfQSDoU5L3C0xavN5%2B2%2FX1PSQ%3D%3D",
+            "origin": "https://sandbox.d.greeninvoice.co.il/api/v1/documents/download?d=3KryGhw3Y0MN9f%2F2UigYLAwVpJQETIX9qGhbPdf17QSrDOwtg5pf2o40AezHjICaeNWUHeIifH1kW5qU6TXpWXQS5skyoi2ekSfMrFGFCMq2Fg%2FWKotEqU49rhhOGuE2kk17yIODGB2nmFdH7%2FykoSU5VGIb68nwnY7U%2FwQFFzsYhlBHtBLn1N6DycXheJHvC26UZ3otO%2FJO8Jh3R993Uw%3D%3D"
+        }
+    }
+}

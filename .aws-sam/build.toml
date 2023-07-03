@@ -343,6 +343,24 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["IpnTestTBD"]
 
+[function_build_definitions.87944f74-094c-49ca-89cb-87675ad29715]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\organizations\\get_balance"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GetBalance"]
+
+[function_build_definitions.81cb66aa-5130-45af-a4a2-4b872ff72318]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\documents\\morning_wh_TBD"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["MorningWHTBD"]
+
 [layer_build_definitions]
 [layer_build_definitions.5bfc2155-77ee-4620-a322-27ddf047d5af]
 layer_name = "Utils"

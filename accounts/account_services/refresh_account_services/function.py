@@ -45,6 +45,7 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
     res = requests.get(url, headers=cntr_headers)
     print('--cntr status code: ', res.status_code)
     subs = res.json()
+    print('--cntr res: ', subs)
 
     # Construct accounts services from the google data
     account_services = []

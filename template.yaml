@@ -227,6 +227,21 @@ Resources:
             Method: GET
             Path: /organizations/morning-id
             RestApiId: !Ref BillingApi
+  
+  GetBalance:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/get_balance/
+      Description: Get Organization Balance
+      FunctionName: organizations-balance
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/balance
+            RestApiId: !Ref BillingApi
 
 
   # --Accounts
@@ -670,6 +685,27 @@ Resources:
           Properties:
             Method: POST
             Path: /documents/proformas
+            RestApiId: !Ref BillingApi
+
+  MorningWHTBD:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: documents/morning_wh_TBD/
+      Description: Create A Proforma Invoice
+      FunctionName: documents-morning-wh-TBD
+      Role: !Ref OutputRole
+      Environment:
+        Variables:
+          MORNING_SECRET_ARN: arn:aws:secretsmanager:eu-west-1:754084371841:secret:morning-credentials-RFREGX
+          MORNING_URL: https://sandbox.d.greeninvoice.co.il/api/v1/documents
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /documents/morning
             RestApiId: !Ref BillingApi
   
 

@@ -88,7 +88,7 @@ def handle_recurring_payment(recurring_payment_id):
     cursor = conn.cursor()
 
     # Extract the relevant service data
-    cursor.execute('SELECT account_services.*, serial FROM account_services LEFT JOIN services ON services.id = service_id WHERE connection_id = %s', (recurring_payment_id))
+    cursor.execute('SELECT account_services.*, serial FROM account_services LEFT JOIN services ON services.id = service_id WHERE payment_source = %s AND payment_connection_id = %s', ('paypal', recurring_payment_id))
     services = cursor.fetchall()
     print('--services found: ', services)
 
@@ -121,7 +121,7 @@ def handle_failure(data):
     print('--reucurring payment failed--')
 
 
-def legacy_main(event, context):
+def LEGACY_main_TBD(event, context):
     """
     the main function's job is to parse the data, verify the ipn message and then check the txn_type and call the handler function accordingly
     """
