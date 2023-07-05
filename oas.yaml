@@ -3159,14 +3159,48 @@ paths:
   
   /documents/morning:
     post:
-      operationId: morning_wh_TBD
-      tags:
-        - "Documents"
-      summary: "Morning Webhoob"
-      description: "Create a proforma invoice for an organization"
+      operationId: "morning_wh_TBD"
+      parameters:
+      - name: "X-Webhook-Signature"
+        in: "header"
+        required: true
+        schema:
+          type: "string"
+      - name: "X-Webhook-Id"
+        in: "header"
+        required: true
+        schema:
+          type: "string"
+      - name: "X-Webhook-Timestamp"
+        in: "header"
+        required: true
+        schema:
+          type: "string"
+      - name: "X-Webhook-Delivery-Id"
+        in: "header"
+        required: true
+        schema:
+          type: "string"
+      - name: "X-Webhook-Topic"
+        in: "header"
+        required: true
+        schema:
+          type: "string"
       responses:
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "200":
-          description: "Newely created account"
+          description: "200 response"
           headers:
             Access-Control-Allow-Origin:
               schema:
@@ -3175,47 +3209,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Account"
-        "400":
-          description: "Bad Request Error Message"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: "Unauthorized Error Message"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"      
-      # security:
-      # - billing-authorizer: []   
-      x-amazon-apigateway-request-validator: "Validate query string parameters and headers"       
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
       x-amazon-apigateway-integration:
+        type: "aws_proxy"
         httpMethod: "POST"
         uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:documents-morning-wh-TBD/invocations"
         responses:
           default:
             statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-          err-401:
-            statusCode: "401"
-          err-400:
-            statusCode: "400"
-        requestTemplates:
-          application/json: |
-            #set($inputRoot = $input.path('$'))
-            {                            
-              "id": "$inputRoot.id",              
-              "type": "$inputRoot.type",              
-              "total": "$inputRoot.total"              
-            }
-        passthroughBehavior: "when_no_templates"
+        passthroughBehavior: "when_no_match"
         contentHandling: "CONVERT_TO_TEXT"
-        type: "aws"
     options:
-      tags:
-      - "Documents"
       responses:
         "200":
           description: "200 response"
@@ -3234,6 +3239,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       x-amazon-apigateway-integration:
+        type: "mock"
         responses:
           default:
             statusCode: "200"
@@ -3244,7 +3250,6 @@ paths:
         requestTemplates:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
-        type: "mock"  
 
  
 components:
