@@ -18,8 +18,10 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')  
 
     # Create the statement for all account ids
+    accounts_list = json.loads(event['accounts'])
+
     acc_statement = 'accounts.id = %s' 
-    acc_statement += ' OR accounts.id = %s' * (len(event['accounts']) - 1)
+    acc_statement += ' OR accounts.id = %s' * (len(accounts_list) - 1)
 
 
     # Get all account services For Each account owned by this organizations
@@ -28,7 +30,7 @@ def lambda_handler(event, context):
     statement += 'WHERE account_services.id IS NOT NULL AND payment_source = %s AND '
     statement += acc_statement
 
-    statement_params = ['manual'] + event['accounts']    
+    statement_params = ['manual'] + accounts_list    
 
     print('--SQL statement: ', statement)
     print('--SQL statement params: ', statement_params)    

@@ -665,6 +665,188 @@ paths:
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
+  
+  /organizations/{id}/balance:
+    get:
+      operationId: get_organization_balance
+      tags:
+        - Organizations
+      summary: "Get Organization Balance"
+      description: Get a list of organization balance by currency
+      responses:
+        "200":
+          description: Success message
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"                
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/Balance"        
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - billing-authorizer: []
+      x-code-samples:
+        - lang: javascript
+          source: |
+            fetch($BASE/organizations/6/balance, {
+              headers: {Authorization: 'Bearer $TOKEN'}              
+            })    
+      x-amazon-apigateway-request-validator: Validate query string parameters and headers"
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-balance/invocations"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        requestTemplates:
+          application/json: |            
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "id": "$input.params('id')"
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"  
+    options:
+      tags:
+      - "Options"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET, OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  
+  /organizations/{id}/docs:
+    get:
+      operationId: list_organization_docs
+      tags:
+        - Organizations
+      summary: List Organization Documents
+      description: Get a list of documents related to an organization
+      responses:
+        "200":
+          description: Success message
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"                
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/DocumentsList"        
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - billing-authorizer: []
+      x-code-samples:
+        - lang: javascript
+          source: |
+            fetch($BASE/organizations/6/docs, {
+              headers: {Authorization: 'Bearer $TOKEN'}              
+            })    
+      x-amazon-apigateway-request-validator: Validate query string parameters and headers"
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:organizations-list-docs/invocations"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        requestTemplates:
+          application/json: |            
+            {
+              "user_sub": "$context.authorizer.claims.sub",
+              "id": "$input.params('id')"
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          err-401:
+            statusCode: "401"  
+    options:
+      tags:
+      - "Options"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET, OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
 
   /organizations/{id}/status:
     post:
@@ -3037,7 +3219,8 @@ paths:
               "language": "$inputRoot.language",
               "currency": "$inputRoot.currency",
               "due": "$inputRoot.due",
-              "created": "$inputRoot.created"
+              "created": "$inputRoot.created",
+              "accounts": "$inputRoot.accounts"
             }
         passthroughBehavior: "when_no_templates"
         contentHandling: "CONVERT_TO_TEXT"
@@ -3160,6 +3343,7 @@ paths:
   /documents/morning:
     post:
       operationId: "morning_wh_TBD"
+      tags: ['Documents']
       parameters:
       - name: "X-Webhook-Signature"
         in: "header"
@@ -3251,6 +3435,88 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
 
+  /documents/currencies:
+    get:
+      operationId: list_currencies
+      tags:
+        - "Documents"
+      summary: "List Supported Currencies"
+      description: "List supported currencies"               
+      responses:
+        "401":
+          description: "Unauthorized Error Message"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "A list of currencies"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Currencies"
+        "403":
+          description: "Forbidden Error Message (Invalid JWT Token)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - billing-authorizer: []
+      x-codeSamples:
+      - lang: "javascript"
+        source: "fetch('$BASE/users?documents/currencies', {headers: {Authorization:\
+          \ 'Bearer: $Token'}})"
+      x-amazon-apigateway-request-validator: "Validate query string parameters and\
+        \ headers"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:list-currencies/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        passthroughBehavior: "when_no_templates"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
+    options:
+      tags:
+      - "Options"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET, OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+
  
 components:
   parameters:
@@ -3292,8 +3558,81 @@ components:
         active:
           type: boolean
           description: Whether the client is active or not
-          example: true
-
+          example: true    
+    Currencies:
+      title: Currencies
+      type: array
+      items:
+        type: string    
+    Balance:
+      title: Balance
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: number
+            description: The balance amount
+            example: 255
+          currency:
+            type: string
+            description: The currency code for this amount
+            example: ILS
+    Document:
+      title: Document
+      type: object      
+      properties:
+        id:
+          type: number
+          description: Unique ID of the document
+          example: 25
+        organization_id:
+          type: number
+          description: Unique ID of the organization related to this document
+          example: 25
+        type:
+          type: string
+          description: document type
+          example: proforma
+          enum: [proforma]
+        description:
+          type: string
+          description: Document description
+          example: profoma invoice
+        value:
+          type: number
+          description: The total amount for this document
+          example: 357.57
+        currency:
+          type: string
+          description: Currency code for this document
+          example: ILS
+        language:
+          type: string
+          description: Language of the document
+          example: he
+        source:
+          type: string
+          description: link to the document PDF
+        status:
+          type: string
+          description: document status
+          example: open
+          enum: [open]          
+        morning_id:
+          type: string
+          description: Unique ID in the morning system for this document
+        due_date:
+          type: string
+          description: due date for this document in ISO format
+        created_at:
+          type: string
+          description: date and time this document was created at in ISO format
+    DocumentsList:
+      title: DocumentsList
+      type: array
+      items:
+        $ref: "#/components/schemas/Document"                
     Account:
       title: "Account"
       type: "object"

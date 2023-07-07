@@ -36,7 +36,7 @@ Parameters:
     Default: arn:aws:iam::754084371841:role/main-engine-output-cntr
   FunctionTimeout:
     Type: Number
-    Default: 10
+    Default: '10'
   UsersRole:
     Type: String
     Default: arn:aws:iam::754084371841:role/main-engine-users-lambda-role
@@ -44,7 +44,6 @@ Parameters:
     Type: String
     Default: arn:aws:iam::754084371841:role/main-engine-paypal-role
   
-
 
 Resources:
   BillingApi:
@@ -240,7 +239,22 @@ Resources:
           Type: Api
           Properties:
             Method: GET
-            Path: /organizations/balance
+            Path: /organizations/{id}/balance
+            RestApiId: !Ref BillingApi
+  
+  ListOrganizationDocs:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: organizations/list_docs/
+      Description: List Organization Documents
+      FunctionName: organizations-list-docs
+      Role: !Ref MainEngineRole
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /organizations/{id}/docs
             RestApiId: !Ref BillingApi
 
 
@@ -685,6 +699,25 @@ Resources:
           Properties:
             Method: POST
             Path: /documents/proformas
+            RestApiId: !Ref BillingApi
+
+  ListCurrencies:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: documents/list_currencies/
+      Description: List Supported Currencies
+      FunctionName: list-currencies
+      Environment:
+        Variables:          
+          MORNING_URL: https://api.greeninvoice.co.il/api/v1/tools/currencies
+      Layers:
+        - 'arn:aws:lambda:eu-west-1:754084371841:layer:requests-layer:1'
+      Events:
+        ApiCall:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /documents/currencies
             RestApiId: !Ref BillingApi
 
   MorningWHTBD:

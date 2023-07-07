@@ -361,6 +361,24 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["MorningWHTBD"]
 
+[function_build_definitions.394d10d4-94c8-4f0d-8dd7-ee1946a4d225]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\organizations\\list_docs"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ListOrganizationDocs"]
+
+[function_build_definitions.c0d7ff3f-7ec7-4410-aad6-f1a35071b635]
+codeuri = "C:\\Users\\Owner\\Desktop\\high-t\\billing-api\\documents\\list_currencies"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "function.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ListCurrencies"]
+
 [layer_build_definitions]
 [layer_build_definitions.5bfc2155-77ee-4620-a322-27ddf047d5af]
 layer_name = "Utils"
