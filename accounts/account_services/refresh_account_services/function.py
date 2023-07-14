@@ -68,6 +68,24 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
     print('--account services after update: ', account_services)
     return account_services
 
+
+
+def calculate_percent_values(services, cursor):
+    """
+    Calulate the actuall values for each of the percent based serivces
+    `services`: a list of percent based services in the account
+    """
+    new_services = services.copy()
+
+    for i in range(len(services)):
+        cursor.execute('SELECT value, currency FROM account_services WHERE id = %s', services[i]['percent_source_id'])
+        source_service = cursor.fetchone()
+        actual_value = source_service['value'] * services[i]['percent_value'] / 100
+        new_services[i]['value'] = actual_value
+        new_services[i]['currency'] = source_service['currency']
+    
+    return new_services
+
 def lambda_handler(event, context):
     """
     Update the service connections of an account by account id.
@@ -94,7 +112,7 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-401: user access denied')
 
-
+    
     # Get the provider endpoint
     cursor.execute('SELECT account_number, payer_account, provider_id FROM accounts WHERE id = %s', event['account_id'])
     dbq = cursor.fetchone()
@@ -121,6 +139,22 @@ def lambda_handler(event, context):
         cursor.execute('INSERT INTO account_services (account_id, service_id, description, value, currency, margin, quantity) VALUES (%s, %s, %s, %s, %s, %s, %s)', list(service.values()))
     conn.commit()
     print('--inserted new services--')
+     
+      
+    # -- Update percent based services --
+    print('--getting percent based services--')
+    cursor.execute('SELECT * FROM account_services WHERE account_id = %s AND percent_source_id IS NOT NULL', event['account_id'])
+    percent_services = cursor.fetchall()
+    print('--percent based services found: ', percent_services)
+    if len(percent_services) > 0:
+        percent_services = calculate_percent_values(percent_services, cursor)
+        print('--updated percent services: ', percent_services)
+        # Update in DB
+        for service in percent_services:
+            cursor.execute('UPDATE account_services SET value = %s, currency = %s WHERE id = %s', (service['value'], service['currency'], service['id']))
+            conn.commit()
+        print('--updated in db--')
+    
 
     # Return all the servies in the account
     cursor.execute('SELECT * FROM account_services WHERE account_id = %s', event['account_id'])

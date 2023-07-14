@@ -29,6 +29,10 @@ def lambda_handler(event, context):
         
     cursor.execute(statement, params)
     accounts = cursor.fetchall()
+
+    # Serialize datetime data
+    for account in accounts:
+         account['last_update'] = account['last_update'].isoformat()
     
     conn.close()
     return accounts

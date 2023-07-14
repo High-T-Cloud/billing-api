@@ -1,11 +1,13 @@
 {
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "proforma_id": 1,
-  "payment_date": "2023-06-20",
-  "id": 320,
-  "organization_id": 29,
-  "description" : "testing new proforma",
+  "account_id": 28,
+  "discount_type": "percentage",
+  "discount_amount": 10,
+  "description": "test",
   "currency": "ILS",
   "language": "he",
-  "accounts": [28, 29]
+  "organization_id": 28,
+  "accounts": "[26]",
+  "rounding": "false"
+
 }

@@ -57,18 +57,31 @@ def lambda_handler(event, context):
             'price': float(s['value']),
             'currency': s['currency'],
             'quantity': s['quantity']
-        }        
+        }
+        item['vatType'] = 1 if s['vat_included'] else 0
         income.append(item)
     print('--income: ', income)       
+
+    # Apply discount
+    if event['discount_type'] != 'none' and event['discount_amount'] != '':
+        discount = {
+            'type': event['discount_type'],
+            'amount': float(event['discount_amount'])
+        }
+
+    # Rounding
+    rounding = (event['rounding'] == 'true')
     
     req_body = {
         'description': event['description'],
         'type': 300,
         'lang': event['language'],
         'currency': event['currency'],
-        'vatType': 0,        
+        'vatType': 0,
+        'discount': discount,
         'client': {'id': org_details['morning_id'], 'emails': [org_details['email']]},
-        'income': income
+        'income': income,
+        'rounding': rounding
     }
     print('--request body: ', req_body)
 
@@ -116,7 +129,7 @@ def lambda_handler(event, context):
         'morning_id': res['id'],
     }
     print('--new document data: ', new_doc)
-
+    
     # Add to DB
     print('--adding document to DB--')
     cursor.execute('INSERT INTO documents (organization_id, type, description, value, currency, language, source, morning_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', list(new_doc.values()))

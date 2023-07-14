@@ -32,6 +32,9 @@ def lambda_handler(event, context):
     if not account:
         conn.close()
         raise Exception('err-400: inalid account id')
+    
+    # Serialize datetime data
+    account['last_update'] = account['last_update'].isoformat()
 
     conn.close()
     return account

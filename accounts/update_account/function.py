@@ -25,6 +25,8 @@ def lambda_handler(event, context):
     # Update Account
     cursor.execute('SELECT * FROM accounts WHERE id=%s', event['account_id'])
     account = cursor.fetchone()
+    #Serialize datetime data
+    account['last_update'] = account['last_update'].isoformat()
     
     # merge account with event data
     for key in account:
