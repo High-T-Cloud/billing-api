@@ -17,8 +17,5 @@ def lambda_handler(event, context):
     cursor.execute('SELECT account_services.*, serial, data_source FROM account_services LEFT JOIN services ON service_id = services.id WHERE account_services.id = %s', event['service_id'])
     service = cursor.fetchone()
 
-    # Serialize datetime columns
-    service['last_update'] = service['last_update'].isoformat()
-
     conn.close()
     return service

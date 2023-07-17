@@ -396,20 +396,20 @@ Resources:
             Path: /accounts/{id}/services
             RestApiId: !Ref BillingApi   
     
-  GetAccountService:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      CodeUri: accounts/account_services/get_account_service/
-      Description: Get a single account service
-      FunctionName: account-services-get
-      Role: !Ref MainEngineRole
-      Events:
-        ApiCall:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /accounts/{id}/services/{sid}
-            RestApiId: !Ref BillingApi
+  # GetAccountService:
+  #   Type: 'AWS::Serverless::Function'
+  #   Properties:
+  #     CodeUri: accounts/account_services/get_account_service/
+  #     Description: Get a single account service
+  #     FunctionName: account-services-get
+  #     Role: !Ref MainEngineRole
+  #     Events:
+  #       ApiCall:
+  #         Type: Api
+  #         Properties:
+  #           Method: GET
+  #           Path: /accounts/{id}/services/{sid}
+  #           RestApiId: !Ref BillingApi
   
   GetAccountServiceAdmin:
     Type: 'AWS::Serverless::Function'
