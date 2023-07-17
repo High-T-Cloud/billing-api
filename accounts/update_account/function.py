@@ -22,20 +22,37 @@ def lambda_handler(event, context):
             conn.close()
             raise Exception('err-400: invalid provider id')
             
-    # Update Account
+    # Get account
     cursor.execute('SELECT * FROM accounts WHERE id=%s', event['account_id'])
-    account = cursor.fetchone()
-    #Serialize datetime data
-    account['last_update'] = account['last_update'].isoformat()
+    new_account = cursor.fetchone()
+    print('--old account: ', new_account)
+
+    if not new_account:
+        raise Exception('err-404: could not find account')
+
+    # Reorder to fit sql statement    
+    new_account = {
+        'name': new_account['name'],
+        'account_number': new_account['account_number'],
+        'payer_account': new_account['payer_account'],
+        'provider_id': new_account['provider_id']
+    }
     
     # merge account with event data
-    for key in account:
+    for key in new_account:
         if key in event and event[key] != '':
-            account[key] = event[key]
-    cursor.execute('UPDATE accounts SET name=%s, account_number=%s, provider_id=%s, payer_account=%s WHERE id=%s', (account['name'], account['account_number'], account['provider_id'], account['payer_account'], event['account_id']))
-    
+            new_account[key] = event[key]
+    print('--new account: ', new_account)
+
+    # Update in DB
+    param_names = ('=%s, '.join(new_account.keys())) + '=%s'
+    param_values = list(new_account.values())
+    param_values.append(event['account_id'])
+
+    cursor.execute('UPDATE accounts SET ' + param_names + ' WHERE id = %s', param_values)
     conn.commit()
     conn.close()
     
-    return account
+
+    return {'message': 'account updated'}
     

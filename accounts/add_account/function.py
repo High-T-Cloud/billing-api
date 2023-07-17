@@ -29,18 +29,14 @@ def lambda_handler(event, context):
         'name': None,
         'account_number': None,
         'payer_account': None,
-        'provider_id': None
+        'provider_id': None,
+        'organization_id': event['organization_id'],                
     }
-    # Merge new account with event data
+
+    # Merge event data
     for key in new_account:
         if key in event:
-            new_account[key] = event[key]
-
-    new_account['owner_id'] = event['organization_id']
-
-    # Validate input Data
-    if new_account['name'] == '' or new_account['account_number'] == '' or new_account['provider_id'] == '':
-        raise Exception('err-400: invalid input data')
+            new_account[key] = event[key]        
 
     # Set payer account's default to account number
     if new_account['payer_account'] == '':
@@ -48,9 +44,11 @@ def lambda_handler(event, context):
     
     print('--new acocunt: ', new_account)
 
-    # Insert Account
-    cursor.execute('INSERT INTO accounts (name, account_number, provider_id, owner_id, payer_account) VALUES (%s,%s,%s,%s, %s)',
-                   (new_account['name'], new_account['account_number'], new_account['provider_id'], new_account['owner_id'], new_account['payer_account']))
+    # Insert to DB
+    param_names = ', '.join(new_account.keys())
+    param_values = list(new_account.values())
+    param_placeholders = ('%s, ' * len(new_account))[:-2]    
+    cursor.execute(f'INSERT INTO accounts ({param_names}) VALUES ({param_placeholders})', param_values)
     conn.commit()
     conn.close()
     return {'message': 'account added'}

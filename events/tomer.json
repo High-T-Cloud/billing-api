@@ -1,13 +1,7 @@
 {
+  "account_id": "35",
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "account_id": 28,
-  "discount_type": "percentage",
-  "discount_amount": 10,
-  "description": "test",
-  "currency": "ILS",
-  "language": "he",
-  "organization_id": 28,
-  "accounts": "[26]",
-  "rounding": "false"
-
+  "name": "test updating",
+  "account_number": "3409587",
+  "provider_id":  2 
 }

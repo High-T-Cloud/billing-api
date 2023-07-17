@@ -1,5 +1,51 @@
 from os import environ
 import utils
+import json
+
+
+def create_service_price(event:dict, cursor, conn, id:int):
+    if event['currency'] == 'PER':
+        # Percent based
+        
+        # Extract ids of services to take the percent from
+        percent_from = json.loads(event['percent_from'])
+
+        # Create service_price for each
+        for percent_id in percent_from:
+            new_price = {'account_service_id': id, 'currency': 'PER', 'percent_amount': event['amount'], 'percent_from_id': percent_id}
+            print('--service price: ', new_price)
+
+            # Insert to DB
+            param_names = ', '.join(new_price.keys())
+            param_placeholders = ('%s, ' * len(new_price))[:-2]
+            param_values = list(new_price.values())
+
+            cursor.execute(f'INSERT INTO service_prices ({param_names}) VALUES ({param_placeholders})', param_values)
+            cursor.commit()
+
+    else:
+        # Create service price
+        new_price = {'amount': None, 'currency': None}
+
+        # Merge with event data
+        for key in new_price:
+            if key in event and event[key] != '':
+                new_price[key] = event[key]
+        
+        new_price['account_service_id'] = id
+
+        print('--service price: ', new_price)
+        
+        # Insert to DB
+        param_names = ', '.join(new_price.keys())
+        param_placeholders = ('%s, ' * len(new_price))[:-2]
+        param_values = list(new_price.values())
+        param_values.append()
+
+        cursor.execute(f'INSERT INTO service_prices ({param_names}) VALUES ({param_placeholders})', param_values)
+        cursor.conn()
+        print('--inserted service price to DB--')
+
 
 def lambda_handler(event, context):
     print('--event: ', event)
@@ -25,33 +71,47 @@ def lambda_handler(event, context):
         raise Exception('err-400: invalid service id')
     print('--validated service id--')
 
+    # Validate payment source
+    if event['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
+        conn.close()
+        raise Exception('err-400: invalid payment source')
+
     # Create a new account service
-    new_service = {'service_id': None, 'account_id': None, 'description': None, 'value': None, 'currency': None, 'quantity': None, 'discount': None, 'margin': None, 'payment_source': None, 'payment_source_id': None}
+    # TODO: validate currency code
+    new_service = {
+        'service_id': None,
+        'account_id': None,
+        'description': None,
+        'quantity': None,
+        'discount': None,
+        'margin': None,
+        'payment_source': None,
+        'payment_source_id': None,
+        'vat_included': None,
+    }
     for key in event:
         if key in new_service and event[key] != '':
             new_service[key] = event[key] 
   
     print('--new account service: ', new_service)
-    
-    # TODO: validate currency code
 
-    # Validate given data    
-    if new_service['payment_source']:
-        if new_service['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
-            raise Exception('err-400: invalid payment source')
-    if new_service['discount']:
-        if int(new_service['discount']) > 100 or int(new_service['discount']) < 0:
-            raise Exception('err-400: invalid discount value')
-    if new_service['margin']:
-        if int(new_service['margin']) > 100 or int(new_service['margin']) < 0:
-            raise Exception('err-400: invalid margin value')
-    
-    print('--passed validation--')
-    
     # Insert to DB
-    cursor.execute('INSERT INTO account_services (service_id, account_id, description, value, currency, quantity, discount, margin, payment_source, payment_source_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', tuple(new_service.values()))
+    param_names = ', '.join(new_service.keys())
+    param_placeholders = ('%s, ' * len(new_service))[:-2]
+    param_values = list(new_service.values())
+
+    cursor.execute(f'INSERT INTO account_services ({param_names}) VALUES ({param_placeholders})', param_values)
     conn.commit()
-    conn.close()
+
+    # Get the id of the newely created account_service
+    cursor.execute('SELECT LAST_INSERTED_ID() AS id')    
+    acc_service_id = cursor.fetchone()['id']
+
+    print('--added account_service to DB--')
+
+    create_service_price(event, cursor, conn, acc_service_id)
+        
+    
 
     return {
         'message': 'account service added'

@@ -12,22 +12,26 @@ def lambda_handler(event, context):
     if int(user_role) != 3:
         conn.close()
         raise Exception('err-401: user access denied')
+        
     
-    # function logic
-    new_service = {'serial': None, 'description': None, 'value': None, 'currency': None, 'data_source': None}
-    
-    # create the new secrvice
+    # Crate the new service
+    new_service = {'serial': None, 'description': None, 'amount': None, 'currency': None, 'data_source': None}
+
     for key in new_service:
         if key in event and event[key] != '':
             new_service[key] = event[key]
     
-    # --Cntr data source--
+    # cntr data source
     if new_service['data_source'] == 'cntr':
-        new_service['value'] = None
+        new_service['amount'] = None
         new_service['currency'] = None  # Currency will be determined according to cntr data when creating invoice
     
-    cursor.execute('INSERT INTO services (serial, description, value, currency, data_source) VALUES (%s,%s,%s,%s, %s)',
-        (new_service['serial'], new_service['description'], new_service['value'], new_service['currency'], new_service['data_source']))
+    # Insert to DB
+    params_placeholder = ("%s, " * len(new_service))[:-2]
+    param_names = ', '.join(new_service.keys())
+    param_values = list(new_service.values())        
+    statement = 'INSERT INTO services (' + param_names + ') VALUES (' + params_placeholder + ')'    
+    cursor.execute(statement, param_values)
     conn.commit()
     conn.close()
     
