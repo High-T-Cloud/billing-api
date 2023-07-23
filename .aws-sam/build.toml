@@ -190,15 +190,6 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["ListAccountServices"]
 
-[function_build_definitions.5c5cd888-676d-4ab4-8dc3-aa752f4b7ee3]
-codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\get_account_service"
-runtime = "python3.9"
-architecture = "x86_64"
-handler = "function.lambda_handler"
-manifest_hash = ""
-packagetype = "Zip"
-functions = ["GetAccountService"]
-
 [function_build_definitions.32607bf1-f730-4b8e-8710-f6fba4b80d75]
 codeuri = "C:\\Users\\Tomer\\Desktop\\High-T\\billing-api\\accounts\\account_services\\get_account_service_admin"
 runtime = "python3.9"

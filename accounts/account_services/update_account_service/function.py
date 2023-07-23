@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-401: user access denied')
     
-    # Fetch the service connection
+    # Fetch the account service
     cursor.execute('SELECT * FROM account_services WHERE id = %s', event['service_id'])
     service = cursor.fetchone()
     if not service:
@@ -39,16 +39,29 @@ def lambda_handler(event, context):
         if int(service['discount']) > 100 or int(service['discount']) < 0:
             raise Exception('err-400: invalid discount value')
     if service['margin']:
-        if int(service['margin']) > 100 or int(service['margin']) < 0:
+        if int(service['margin']) < 0:
             raise Exception('err-400: invalid margin value')
+    
+    # Validate given percent_from id
+    if service['percent_from'] is not None:
+        print('--percent based--')
+        cursor.execute('SELECT currency FROM account_services WHERE id = %s', service['percent_from'])
+        currency = cursor.fetchone()
+        if not currency:
+            raise Exception('err-400: invalid percent from id')
+        service['currency'] = currency['currency']
+
+    # Remove non updating columns from data
+    service.pop('id')
+    service.pop('last_update')
             
     # Save changes in DB
-    new_service_params = (service['description'], service['value'], service['currency'], service['quantity'],service['discount'], service['margin'], service['payment_source'], service['payment_source_id'],service['id'])
-    cursor.execute('UPDATE account_services SET description=%s, value=%s, currency=%s, quantity=%s, discount=%s, margin=%s, payment_source=%s, payment_source_id=%s WHERE id = %s', new_service_params)    
+    param_names = ('=%s, '.join(service.keys())) + '=%s'
+    param_values = list(service.values())
+    param_values.append(event['service_id'])
+        
+    cursor.execute('UPDATE account_services SET ' + param_names + ' WHERE id = %s', param_values)
     conn.commit()
     conn.close()
-
-    # Serialize datetime column for output
-    service['last_update'] = service['last_update'].isoformat()
     
-    return service
+    return {'message': 'Service updated'}

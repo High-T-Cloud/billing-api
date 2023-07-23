@@ -1,9 +1,10 @@
 {
   "user_sub": "7e8c75b1-4712-4561-bf8d-5e3c359d054b",
-  "account_id": "35",
-  "service_id": 158,
-  "description": "Testing account service adding",
+  "account_id": "34",
+  "service_id": 166,
+  "description": "Testing account service updating",
   "amount": 10,
   "currency": "USD",
-  "percent_from": "[145]"  
+  "percent_from": "166",
+  "percent_amount": 50
 }

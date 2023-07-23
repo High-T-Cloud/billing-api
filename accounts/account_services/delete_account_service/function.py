@@ -21,11 +21,8 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-400: invalid account service id')
     print('--validated sid--')
-
-    # Cascading: Delete service prices
-    cursor.execute('DELETE FROM service_prices WHERE account_service_id = %s', event['service_id'])
     
-    # Delete service connection
+    # Delete account service
     cursor.execute('DELETE FROM account_services WHERE id = %s', event['service_id'])
     conn.commit()
     conn.close()

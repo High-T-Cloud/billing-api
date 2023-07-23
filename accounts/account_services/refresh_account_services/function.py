@@ -78,10 +78,10 @@ def calculate_percent_values(services, cursor):
     new_services = services.copy()
 
     for i in range(len(services)):
-        cursor.execute('SELECT value, currency FROM account_services WHERE id = %s', services[i]['percent_source_id'])
+        cursor.execute('SELECT amount, currency FROM account_services WHERE id = %s', services[i]['percent_from'])
         source_service = cursor.fetchone()
-        actual_value = source_service['value'] * services[i]['percent_value'] / 100
-        new_services[i]['value'] = actual_value
+        actual_value = source_service['amount'] * services[i]['percent_amount'] / 100
+        new_services[i]['amount'] = actual_value
         new_services[i]['currency'] = source_service['currency']
     
     return new_services
@@ -113,58 +113,26 @@ def lambda_handler(event, context):
         raise Exception('err-401: user access denied')
 
     
-    # Get the provider endpoint
+    # Get account details
     cursor.execute('SELECT account_number, payer_account, provider_id FROM accounts WHERE id = %s', event['account_id'])
-    dbq = cursor.fetchone()
-    cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = %s', dbq['provider_id'])
+    account = cursor.fetchone()
+    print('--account details: ', account)
+    # Get connector endpoint
+    cursor.execute('SELECT cntr_endpoint FROM providers WHERE id = %s', account['provider_id'])
     cntr_endpoint = cursor.fetchone()['cntr_endpoint']
     print('--cntr_endpoint: ', cntr_endpoint)
 
-    # Get accounts services data
-    account_services = []
-    if cntr_endpoint in CONNECTORS_GROUP1:
-        account_services = get_services_g1(cursor, conn, cntr_endpoint, dbq['account_number'], event['account_id'], dbq['payer_account'])
-    elif cntr_endpoint in CONNECTORS_GROUP2:
-        account_services = get_services_g2(cursor, conn, cntr_endpoint, dbq['account_number'], event['account_id'])        
-    
-    print('--new account services: ', account_services)
+    # Get all current account services
+    cursor.execute('SELECT account_services.*, data_source FROM account_services LEFT JOIN services on services.id = service_id WHERE account_id = %s', event['account_id'])
+    account_services = cursor.fetchall()
+    print('--currency account services: ', account_services)
 
-    # Delete all account services with cntr data_source and insert the new ones
-    cursor.execute('DELETE account_services FROM account_services LEFT JOIN services ON services.id = account_services.service_id WHERE account_id = %s AND data_source = %s', (event['account_id'], 'cntr'))
-    conn.commit()
-    print('--deleted old account services')
-    
-    for service in account_services:
-        print('--inserting service: ', service)
-        cursor.execute('INSERT INTO account_services (account_id, service_id, description, value, currency, margin, quantity) VALUES (%s, %s, %s, %s, %s, %s, %s)', list(service.values()))
-    conn.commit()
-    print('--inserted new services--')
-     
-      
-    # -- Update percent based services --
-    print('--getting percent based services--')
-    cursor.execute('SELECT * FROM account_services WHERE account_id = %s AND percent_source_id IS NOT NULL', event['account_id'])
-    percent_services = cursor.fetchall()
-    print('--percent based services found: ', percent_services)
-    if len(percent_services) > 0:
-        percent_services = calculate_percent_values(percent_services, cursor)
-        print('--updated percent services: ', percent_services)
-        # Update in DB
-        for service in percent_services:
-            cursor.execute('UPDATE account_services SET value = %s, currency = %s WHERE id = %s', (service['value'], service['currency'], service['id']))
-            conn.commit()
-        print('--updated in db--')
+    # split services into percent based and cntr based
+    percent_based_iservices = []
+    cntr_based_services = []
     
 
-    # Return all the servies in the account
-    cursor.execute('SELECT * FROM account_services WHERE account_id = %s', event['account_id'])
-    output = cursor.fetchall()
-
-    # Serialize datetime values in the response
-    for service in output:
-        service['last_update'] = service['last_update'].isoformat()
-
-    return output
+    # Update account services data
 
 
 

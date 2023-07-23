@@ -1,64 +1,5 @@
 from os import environ
 import utils
-import json
-
-
-def create_service_price(event:dict, id:int, cursor, conn ):
-    print('--creating price data--')
-    if 'percent_from' in event and event['percent_from'] != '':
-        print('--in event--')
-        # Percent based
-        
-        # Extract ids of services to take the percent from
-        percent_from = json.loads(event['percent_from'])
-
-        # Create service_price for each
-        for percent_id in percent_from:
-
-            # Get currency and validate account_service exists
-            cursor.execute('SELECT currency, percent_from_id FROM service_prices WHERE account_service_id = %s', percent_id)
-            currency = cursor.fetchone()
-            print('--currecny: ', currency)
-            if not currency:
-                #TODO: Severe error! (account service created without service price)
-                conn.close()
-                raise Exception('err-400: cannot find account service in percent_from')
-            if currency['percent_from_id'] != None:
-                raise Exception('err-400: cannot use percent based account services')
-            currency = currency['currency']
-
-            new_price = {'account_service_id': id, 'currency': currency, 'percent_amount': event['amount'], 'percent_from_id': percent_id}
-            print('--service price: ', new_price)
-
-            # Insert to DB
-            param_names = ', '.join(new_price.keys())
-            param_placeholders = ('%s, ' * len(new_price))[:-2]
-            param_values = list(new_price.values())
-
-            cursor.execute(f'INSERT INTO service_prices ({param_names}) VALUES ({param_placeholders})', param_values)
-            conn.commit()
-
-    else:
-        # Create service price
-        new_price = {'amount': None, 'currency': None}
-
-        # Merge with event data
-        for key in new_price:
-            if key in event and event[key] != '':
-                new_price[key] = event[key]
-        
-        new_price['account_service_id'] = id
-
-        print('--service price: ', new_price)
-        
-        # Insert to DB
-        param_names = ', '.join(new_price.keys())
-        param_placeholders = ('%s, ' * len(new_price))[:-2]
-        param_values = list(new_price.values())
-
-        cursor.execute(f'INSERT INTO service_prices ({param_names}) VALUES ({param_placeholders})', param_values)
-        conn.commit()
-        print('--inserted service price to DB--')
 
 
 def lambda_handler(event, context):
@@ -97,6 +38,10 @@ def lambda_handler(event, context):
         'service_id': None,
         'account_id': None,
         'description': None,
+        'amount': None,
+        'currency': None,
+        'percent_amount': None,
+        'percent_from': None,
         'quantity': None,
         'discount': None,
         'margin': None,
@@ -111,6 +56,20 @@ def lambda_handler(event, context):
   
     print('--new account service: ', new_service)
 
+    # Validate percent from
+    if 'percent_from' in new_service:
+        print('--percent based--')
+        if 'percent_amount' not in new_service:
+            raise Exception('err-400: percent amount not given')
+        cursor.execute('SELECT currency FROM account_services WHERE id = %s', new_service['percent_from'])
+        currency = cursor.fetchone()
+        print('--currency found: ', currency)
+        if not currency:
+            raise Exception('err-400: Could not find percent based data')
+        new_service['currency'] = currency['currency']
+        new_service['amount'] = None
+
+
     # Insert to DB
     param_names = ', '.join(new_service.keys())
     param_placeholders = ('%s, ' * len(new_service))[:-2]
@@ -118,14 +77,6 @@ def lambda_handler(event, context):
 
     cursor.execute(f'INSERT INTO account_services ({param_names}) VALUES ({param_placeholders})', param_values)
     conn.commit()
-
-    # Get the id of the newely created account_service
-    cursor.execute('SELECT LAST_INSERT_ID() AS id')    
-    acc_service_id = cursor.fetchone()['id']
-    print('--inserted account service to db--')
-
-
-    create_service_price(event, acc_service_id, cursor, conn )
         
     return {
         'message': 'account service added'
