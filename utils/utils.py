@@ -154,3 +154,16 @@ def get_cntr_auth(secret_arn:str)->dict:
     print('--got cntr credentials--')
 
     return headers
+
+
+# Helper functions
+def get_insert_statement(item, table=None):
+    param_names = ', '.join(item.keys())
+    param_placeholders = ('%s, ' * len(item))[:-2]
+    param_values = list(item.values())
+
+    if table:
+        statement = f'INSERT INTO {table} ({param_names}) VALUES ({param_placeholders})'
+        return statement, param_values, param_names, param_placeholders
+
+    return param_values, param_names, param_placeholders

@@ -2,12 +2,17 @@ import utils
 import os
 import requests
 
-def get_services_g1(cursor, conn, cntr_endpoint:str, account_number:str, account_id:str, payer_account:str = None) -> list:
+def update_cntr_services_g1(cursor, conn, services:list, account:dict, cntr_endpoint:str) -> list:
+    """
+    get amount from invoice and update the account service data
+    """
+
+    print('--getting connector data--')
     # Get data from the connector
     cntr_headers = utils.get_cntr_auth(os.environ['CNTR_SECRET_ARN'])
-    url = f'{os.environ["CNTR_API_URL"]}{cntr_endpoint}/invoices-last?account_id={account_number}&last=1'
-    if payer_account is not None:
-        url += '&payer_account=' + payer_account
+    url = f'{os.environ["CNTR_API_URL"]}{cntr_endpoint}/invoices-last?account_id={account["account_numbe"]}&last=1'
+    if account['payer_account'] is not None:
+        url += '&payer_account=' + account['payer_account']
     print('--calling connector api on url: ', url)
 
     res = requests.get(url, headers=cntr_headers)
@@ -17,30 +22,26 @@ def get_services_g1(cursor, conn, cntr_endpoint:str, account_number:str, account
     invoice = invoice[0]
 
     # Get the account service for the provider bill
-    cursor.execute('SELECT account_services.* FROM account_services LEFT JOIN services ON services.id = service_id WHERE account_id = %s AND data_source = %s', (account_id, 'cntr'))
-    account_service = cursor.fetchone()
-    print('--service before update: ', account_service)
+    account_service = services[0]
 
-    # Format the service to match the SQL query
-    f_account_service = {
-            'account_id': account_id,
-            'service_id': account_service['service_id'],
-            'description': account_service['description'],
-            'value': invoice['amount'],
-            'currency': invoice['currency'],
-            'margin': account_service['margin'],
-            'quantity': account_service['quantity'],
-        }
+    # Update value
+    amount = invoice['amount']
+    currency = invoice['currency']
+
+    # Update margin and discount
+    total = amount
+    total = amount * ( 1 + (account_service['margin'] / 100))
+    total = amount * (1 - (account_service['discount'] / 100))
     
-    print('--service after update: ', f_account_service)
-
-    return [f_account_service]
+    # Update in DB
+    cursor.execute('UPDATE account_services SET amount = %s, currency = %s, total = %s WHERE id = %s', (amount, currency, total, account_service['id']))
+    conn.commit()
     
 
-def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account_id:str) -> list:    
+def update_cntr_services_g2(cursor, conn, services:list, account:dict, cntr_endpoint:str) -> list:    
     # Get data from connector
     cntr_headers = cntr_headers = utils.get_cntr_auth(os.environ['CNTR_SECRET_ARN'])
-    url = f"{os.environ['CNTR_API_URL']}{cntr_endpoint}/invoice?customer_id={account_number}"
+    url = f"{os.environ['CNTR_API_URL']}{cntr_endpoint}/invoice?customer_id={account['account_number']}"
     print('--calling connector api with url: ', url)
     res = requests.get(url, headers=cntr_headers)
     print('--cntr status code: ', res.status_code)
@@ -48,43 +49,66 @@ def get_services_g2(cursor, conn, cntr_endpoint:str, account_number:str, account
     print('--cntr res: ', subs)
 
     # Construct accounts services from the google data
-    account_services = []
+    new_account_services = []
     for sub in subs:
         # Get the releveant service for the subscription
         cursor.execute('SELECT id, description FROM services WHERE serial = %s', sub['serial'])
         service = cursor.fetchone()
         
         account_service = {
-            'account_id': account_id,
+            'account_id': account['account_id'],
             'service_id': service['id'],
             'description': service['description'],
-            'value': sub['value'],
+            'amount': sub['value'],
             'currency': sub['currency'],
-            'margin': sub['margin'],
+            # 'margin': sub['margin'],  # TODO: Check margin meanings
             'quantity': sub['quantity'],
         }
-        account_services.append(account_service)
+        new_account_services.append(account_service)
 
-    print('--account services after update: ', account_services)
-    return account_services
+    print('--fetched account services: ', new_account_services)
+
+    # Match existing services by serial and update values
+    for new_service in new_account_services:
+        for service in services:
+            if new_service['service_id'] == service['service_id']:
+                # Update values in DB
+                cursor.execute('UPDATE account_services SET amount = %s, currency = %s, quantity = %s WHERE id = %s', (new_service['amount'], new_service['currency'], new_service['quantity'], service['id']))                
+                conn.commit()
+                break
+            # New service
+            print('--creating new account service--')
+            
+                
 
 
-
-def calculate_percent_values(services, cursor):
-    """
-    Calulate the actuall values for each of the percent based serivces
-    `services`: a list of percent based services in the account
-    """
-    new_services = services.copy()
-
-    for i in range(len(services)):
-        cursor.execute('SELECT amount, currency FROM account_services WHERE id = %s', services[i]['percent_from'])
-        source_service = cursor.fetchone()
-        actual_value = source_service['amount'] * services[i]['percent_amount'] / 100
-        new_services[i]['amount'] = actual_value
-        new_services[i]['currency'] = source_service['currency']
     
-    return new_services
+
+
+def update_percent_services(cursor, conn, services:list):
+    print('--updating percent services--')
+    for service in services:
+        # Get percent_from service
+        cursor.execute('SELECT total FROM account_services WHERE id = %s', service['percent_from'])
+        total = cursor.fetchone()['total']
+        total = total * (service['margin'] / 100 + 1) 
+        total = total * ( 1 - (service['discount'] / 100)) 
+        # Update in DB
+        cursor.execute('UPDATE account_services SET total = %s WHERE id = %s', (total, service['id']))
+        conn.commit()    
+
+
+def update_manual_services(cursor, conn, services:list):
+    print('--updating manual services--')
+    for service in services:
+        # Calc Total
+        total = service['amount']
+        total = total * (service['margin'] / 100 + 1) 
+        total = total * ( 1 - (service['discount'] / 100)) 
+        # Update in DB
+        cursor.execute('UPDATE account_services SET total = %s WHERE id = %s', (total, service['id']))
+        conn.commit()    
+
 
 def lambda_handler(event, context):
     """
@@ -98,8 +122,8 @@ def lambda_handler(event, context):
     print('--event: ', event)
 
     # Consts
-    CONNECTORS_GROUP1 = ['/vultr', '/do', '/aws']
-    CONNECTORS_GROUP2 = ['/gapps']
+    CONNECTOR_GROUP_1 = ['/vultr', '/do', '/aws']
+    CONNECTOR_GROUP_2 = ['/gapps']
 
     # Setup
     conn = utils.get_db_connection(os.environ['DB_ENDPOINT'], os.environ['DB_NAME'], os.environ['SECRET_ARN'])
@@ -128,11 +152,32 @@ def lambda_handler(event, context):
     print('--currency account services: ', account_services)
 
     # split services into percent based and cntr based
-    percent_based_iservices = []
+    percent_based_services = []
     cntr_based_services = []
-    
+    manual_services = []
 
-    # Update account services data
+    for service in account_services:
+        if service['data_source'] == 'cntr':
+            cntr_based_services.append(service)
+        elif service['data_source'] == 'percent':
+            percent_based_services.append(service)    
+        elif service['data_source'] == 'manual':
+            manual_services.append[service]
+
+    # Update cntr services
+    if cntr_endpoint in CONNECTOR_GROUP_1:
+        update_cntr_services_g1(cursor, conn, cntr_based_services, account)
+    elif cntr_endpoint in CONNECTOR_GROUP_2:
+        update_cntr_services_g2(cursor, conn, cntr_based_services, account)
+    
+    
+    update_manual_services(cursor, conn, manual_services)
+
+    update_percent_services(cursor, conn, percent_based_services)
+
+    # Return new services
+
+
 
 
 
