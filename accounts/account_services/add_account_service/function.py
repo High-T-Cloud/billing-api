@@ -40,14 +40,13 @@ def lambda_handler(event, context):
         'description': None,
         'amount': None,
         'currency': None,
-        'percent_amount': None,
         'percent_from': None,
         'quantity': None,
         'discount': None,
         'margin': None,
         'payment_source': None,
         'payment_source_id': None,
-        'vat_included': None,
+        # 'vat_included': None,
     }
     new_service = {}
     for key in event:
@@ -59,13 +58,15 @@ def lambda_handler(event, context):
     # Validate percent from
     if 'percent_from' in new_service:
         print('--percent based--')
-        if 'percent_amount' not in new_service:
-            raise Exception('err-400: percent amount not given')
-        cursor.execute('SELECT currency FROM account_services WHERE id = %s', new_service['percent_from'])
+        cursor.execute('SELECT currency, percent_from FROM account_services WHERE id = %s', new_service['percent_from'])
         currency = cursor.fetchone()
         print('--currency found: ', currency)
         if not currency:
-            raise Exception('err-400: Could not find percent based data')
+            conn.close()
+            raise Exception('err-400: Could not find percent based data')            
+        if currency['percent_from'] is not None:
+            conn.close()
+            raise Exception('err-400: Cannot use percent based services')
         new_service['currency'] = currency['currency']
         new_service['amount'] = None
 

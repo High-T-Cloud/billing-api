@@ -1804,7 +1804,7 @@ paths:
             fetch($BASE/accounts/6/services, {
               headers: {Authorization: 'Bearer $TOKEN'},
               method: 'POST',
-              body: JSON.stringify({value: 12, currency: 'USD'})
+              body: JSON.stringify({amount: 12, currency: 'USD'})
             })    
       x-amazon-apigateway-request-validator: Validate body, query string parameters, and headers"
       x-amazon-apigateway-integration:
@@ -1821,13 +1821,14 @@ paths:
               "account_id": "$input.params('id')",                            
               "service_id": "$inputRoot.service_id",
               "description": "$inputRoot.description",
-              "value": "$inputRoot.value",
+              "amount": "$inputRoot.amount",
               "currency": "$inputRoot.currency",
               "discount": "$inputRoot.discount",
               "margin": "$inputRoot.margin",
               "quantity": "$inputRoot.quantity",
+              "percent_from": "$inputRoot.percent_from",
               "payment_source": "$inputRoot.payment_source",
-              "payment_source_id": "$inputRoot.payment_source_id"            
+              "payment_source_id": "$inputRoot.payment_source_id"     
             }
         responses:
           default:
@@ -1873,9 +1874,9 @@ paths:
     post:
       tags:
       - "AccountServices"
-      operationId: refresh_services
-      summary: "Refresh Services"
-      description: "List all servies in the app"
+      operationId: refresh_account_services
+      summary: "Refresh Account Services"
+      description: "Update account service data"
       responses:
         "401":
           description: "Unauthorizard Error Message"
@@ -2224,11 +2225,12 @@ paths:
               "account_id": "$input.params('id')",
               "service_id": "$input.params('sid')",
               "description": "$inputRoot.description",
-              "value": "$inputRoot.value",
+              "amount": "$inputRoot.value",
               "currency": "$inputRoot.currency",
               "discount": "$inputRoot.discount",              
               "margin": "$inputRoot.margin",              
               "quantity": "$inputRoot.quantity",              
+              "percent_from": "$inputRoot.percent_from",              
               "payment_source": "$inputRoot.payment_source",              
               "payment_source_id": "$inputRoot.payment_source_id"             
             }
@@ -2324,7 +2326,7 @@ paths:
             {
               "user_sub": "$context.authorizer.claims.sub",
               "account_id": "$input.params('id')",
-              "service_id": "$input.params('sid')",              
+              "service_id": "$input.params('sid')"            
             }
         responses:
           default:
@@ -3909,18 +3911,16 @@ components:
           type: number               
         description:
           type: string
-        value:
+        amount:
           type: number
         currency:
           type: string
+        percent_from:
+          type: number
         discount:
           type: number
-          maximum: 100
-          minimum: 0
         margin:
           type: number
-          maximum: 100
-          minimum: 0
         quantity:
           type: number
           minimum: 1
@@ -3953,21 +3953,19 @@ components:
           type: "number"
         description:
           type: string
-        value:
+        amount:
           type: number
         currency:
           type: string
         discount:
           type: number
-          maximum: 100
-          minimum: 0
         margin:
           type: number
-          maximum: 100
-          minimum: 0
         quantity:
           type: number
           minimum: 1
+        percent_from:
+          type: number
         payment_source:
           type: string
           enum:
@@ -3976,7 +3974,7 @@ components:
         payment_source_id:
           type: string
           description: Null if payment_source is `manual`
-      required: ["value"]
+      required: ["amount"]
       example:
         service_id: 3
         account_id: 8
@@ -3998,16 +3996,19 @@ components:
           type: "number"        
         last_update:
           type: string        
+        total:
+          type: number
       example:
         id: 5
         service_id: 3
         account_id: 8
         description: Consulting
-        value: 500
+        amount: 500
         currency: NIS
         discount: 20
         margin: 12
         quantity: 1
+        total: 500
         payment_source: paypal
         payment_source_id: I-XX-537
         last_update: "2023-06-06 16:01:24"    

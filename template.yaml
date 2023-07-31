@@ -381,20 +381,21 @@ Resources:
 
 
   # --Account Services
-  ListAccountServices:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      CodeUri: accounts/account_services/list_account_services/
-      Description: List account services for an account
-      FunctionName: account-services-list
-      Role: !Ref MainEngineRole
-      Events:
-        ApiCall:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /accounts/{id}/services
-            RestApiId: !Ref BillingApi   
+  
+  # ListAccountServices:
+  #   Type: 'AWS::Serverless::Function'
+  #   Properties:
+  #     CodeUri: accounts/account_services/list_account_services/
+  #     Description: List account services for an account
+  #     FunctionName: account-services-list
+  #     Role: !Ref MainEngineRole
+  #     Events:
+  #       ApiCall:
+  #         Type: Api
+  #         Properties:
+  #           Method: GET
+  #           Path: /accounts/{id}/services
+  #           RestApiId: !Ref BillingApi   
     
   # GetAccountService:
   #   Type: 'AWS::Serverless::Function'

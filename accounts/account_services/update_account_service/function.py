@@ -35,12 +35,6 @@ def lambda_handler(event, context):
     if service['payment_source']:
         if service['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
             raise Exception('err-400: invalid payment source')
-    if service['discount']:
-        if int(service['discount']) > 100 or int(service['discount']) < 0:
-            raise Exception('err-400: invalid discount value')
-    if service['margin']:
-        if int(service['margin']) < 0:
-            raise Exception('err-400: invalid margin value')
     
     # Validate given percent_from id
     if service['percent_from'] is not None:
