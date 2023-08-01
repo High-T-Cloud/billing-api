@@ -22,9 +22,9 @@ def lambda_handler(event, context):
                 print('--Adding provider info--')
     
     if not provider_info:
-        statement = 'SELECT * FROM accounts WHERE owner_id = %s'
+        statement = 'SELECT * FROM accounts WHERE organization_id = %s'
     else:
-        statement = 'SELECT accounts.*, providers.name AS provider_name, providers.image_path FROM accounts LEFT JOIN providers ON accounts.provider_id = providers.id WHERE owner_id = %s'
+        statement = 'SELECT accounts.*, providers.name AS provider_name, providers.image_path FROM accounts LEFT JOIN providers ON accounts.provider_id = providers.id WHERE organization_id = %s'
     params = (event['organization_id'])
         
     cursor.execute(statement, params)

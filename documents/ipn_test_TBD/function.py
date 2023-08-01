@@ -98,7 +98,7 @@ def handle_recurring_payment(recurring_payment_id):
         raise Exception('err-400: no services matching the paypal subscription id found in db')
 
     # Extract organization data (*use the id of the first service in the list since they must all belong to the same organization)
-    cursor.execute('SELECT id, name, phone, email, morning_id, country, city, address_line FROM organizations WHERE id = (SELECT owner_id FROM accounts WHERE id = %s)', services[0]['account_id'])
+    cursor.execute('SELECT id, name, phone, email, morning_id, country, city, address_line FROM organizations WHERE id = (SELECT organization_id FROM accounts WHERE id = %s)', services[0]['account_id'])
     organization = cursor.fetchone()
     print('--organization found: ', organization)
 

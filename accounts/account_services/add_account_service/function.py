@@ -28,7 +28,7 @@ def lambda_handler(event, context):
 
     # Validate payment source
     if 'payment_source' in event and event['payment_source'] != '':
-        if event['payement_source'] not in PAYMENT_SOURCE_OPTIONS:
+        if event['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
             conn.close()
             raise Exception('err-400: invalid payment source')
 

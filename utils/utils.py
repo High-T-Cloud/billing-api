@@ -53,7 +53,7 @@ def get_user_auth(cursor, event:dict = None, organization_id=None, account_id=No
     if account_id:
         print('--using acocunt owner id--')
         # Get the account's organization owner
-        cursor.execute('SELECT connected_users FROM organizations WHERE id = (SELECT owner_id FROM accounts WHERE id = %s)', account_id)
+        cursor.execute('SELECT connected_users FROM organizations WHERE id = (SELECT organization_id FROM accounts WHERE id = %s)', account_id)
     else:  # Organization mode
         cursor.execute('SELECT connected_users FROM organizations WHERE id = %s', organization_id)
     

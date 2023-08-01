@@ -15,7 +15,7 @@ def lambda_handler(event, context):
           
     statement = 'SELECT accounts.*, providers.name AS provider_name, providers.image_path, COUNT(account_id) AS services FROM accounts '
     statement += 'LEFT JOIN providers ON accounts.provider_id = providers.id LEFT JOIN account_services ON account_id = accounts.id '
-    statement += 'WHERE owner_id = %s GROUP BY accounts.id'
+    statement += 'WHERE organization_id = %s GROUP BY accounts.id'
     
     cursor.execute(statement, event['organization_id'])
     accounts = cursor.fetchall()
