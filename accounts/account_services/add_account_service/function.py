@@ -33,7 +33,6 @@ def lambda_handler(event, context):
             raise Exception('err-400: invalid payment source')
 
     # Create a new account service
-    # TODO: validate currency code
     service_schema = {
         'service_id': None,
         'account_id': None,
@@ -41,12 +40,12 @@ def lambda_handler(event, context):
         'amount': None,
         'currency': None,
         'percent_from': None,
+        'percent_amount': None,
         'quantity': None,
         'discount': None,
         'margin': None,
         'payment_source': None,
         'payment_source_id': None,
-        # 'vat_included': None,
     }
     new_service = {}
     for key in event:
@@ -68,15 +67,12 @@ def lambda_handler(event, context):
             conn.close()
             raise Exception('err-400: Cannot use percent based services')
         new_service['currency'] = currency['currency']
-        new_service['amount'] = None
 
 
     # Insert to DB
-    param_names = ', '.join(new_service.keys())
-    param_placeholders = ('%s, ' * len(new_service))[:-2]
-    param_values = list(new_service.values())
+    statement, vals, _, _ = utils.get_insert_statement(new_service, 'account_services')
 
-    cursor.execute(f'INSERT INTO account_services ({param_names}) VALUES ({param_placeholders})', param_values)
+    cursor.execute(statement, vals)
     conn.commit()
         
     return {

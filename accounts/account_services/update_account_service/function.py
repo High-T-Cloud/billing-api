@@ -29,21 +29,35 @@ def lambda_handler(event, context):
     for key in service:
         if key in event and event[key] != '':
             service[key] = event[key]
+
+    service.pop('service_id')
     print('--New service: ', service)   
+
 
     # Validate given data    
     if service['payment_source']:
         if service['payment_source'] not in PAYMENT_SOURCE_OPTIONS:
             raise Exception('err-400: invalid payment source')
     
-    # Validate given percent_from id
+    # Percent based service
     if service['percent_from'] is not None:
         print('--percent based--')
-        cursor.execute('SELECT currency FROM account_services WHERE id = %s', service['percent_from'])
-        currency = cursor.fetchone()
-        if not currency:
+        # Validate psercent_from id
+        cursor.execute('SELECT currency, amount, margin, discount FROM account_services WHERE id = %s', service['percent_from'])
+        percent_from = cursor.fetchone()
+        if not percent_from:
             raise Exception('err-400: invalid percent from id')
-        service['currency'] = currency['currency']
+        service['currency'] = percent_from['currency']
+
+       # Calc amount based on percent from
+        amount = percent_from['amount']
+        if percent_from['margin'] is not None:
+            amount *= (percent_from['margin'] / 100 + 1)
+        if percent_from['discount'] is not None:
+            amount *= (percent_from['discount'] / 100 + 1)
+        amount *= service['percent_amount']
+        service['amount'] = amount
+          
 
     # Remove non updating columns from data
     service.pop('id')

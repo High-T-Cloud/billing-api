@@ -1827,6 +1827,7 @@ paths:
               "margin": "$inputRoot.margin",
               "quantity": "$inputRoot.quantity",
               "percent_from": "$inputRoot.percent_from",
+              "percent_amount": "$inputRoot.percent_amount",
               "payment_source": "$inputRoot.payment_source",
               "payment_source_id": "$inputRoot.payment_source_id"     
             }
@@ -2231,6 +2232,7 @@ paths:
               "margin": "$inputRoot.margin",              
               "quantity": "$inputRoot.quantity",              
               "percent_from": "$inputRoot.percent_from",              
+              "percent_amount": "$inputRoot.percent_amount",              
               "payment_source": "$inputRoot.payment_source",              
               "payment_source_id": "$inputRoot.payment_source_id"             
             }
@@ -3996,8 +3998,6 @@ components:
           type: "number"        
         last_update:
           type: string        
-        total:
-          type: number
       example:
         id: 5
         service_id: 3
@@ -4008,7 +4008,6 @@ components:
         discount: 20
         margin: 12
         quantity: 1
-        total: 500
         payment_source: paypal
         payment_source_id: I-XX-537
         last_update: "2023-06-06 16:01:24"    

@@ -30,14 +30,8 @@ def update_cntr_services_g1(cursor, conn, services: list, account: dict) -> list
     amount = invoice['amount']
     currency = invoice['currency']
 
-    # Update margin and discount
-    total = amount
-    total = amount * (1 + (account_service['margin'] / 100))
-    total = amount * (1 - (account_service['discount'] / 100))
-
     # Update in DB
-    cursor.execute('UPDATE account_services SET amount = %s, currency = %s, total = %s WHERE id = %s',
-                   (amount, currency, total, account_service['id']))
+    cursor.execute('UPDATE account_services SET amount = %s, currency = %s WHERE id = %s', (amount, currency, account_service['id']))
     conn.commit()
 
 
@@ -97,29 +91,18 @@ def update_percent_services(cursor, conn, services: list):
     print('--updating percent services--')
     for service in services:
         # Get percent_from service
-        cursor.execute(
-            'SELECT total FROM account_services WHERE id = %s', service['percent_from'])
-        total = cursor.fetchone()['total']
-        total = total * service['amount'] / 100
+        cursor.execute('SELECT amount, margin, discount FROM account_services WHERE id = %s', service['percent_from'])
+        percent_from = cursor.fetchone()
+        # Calc amount
+        amount = percent_from['amount']
+        if percent_from['margin'] is not None:
+            amount *= (percent_from['margin'] / 100 + 1)
+        if percent_from['discount'] is not None:
+            amount *= (percent_from['discount'] / 100 + 1)
+        amount *= service['percent_amount']
 
-        total = total * (service['margin'] / 100 + 1)
-        total = total * (1 - (service['discount'] / 100))
         # Update in DB
-        cursor.execute(
-            'UPDATE account_services SET total = %s WHERE id = %s', (total, service['id']))
-        conn.commit()
-
-
-def update_manual_services(cursor, conn, services: list):
-    print('--updating manual services--')
-    for service in services:
-        # Calc Total
-        total = service['amount']
-        total = total * (service['margin'] / 100 + 1)
-        total = total * (1 - (service['discount'] / 100))
-        # Update in DB
-        cursor.execute(
-            'UPDATE account_services SET total = %s WHERE id = %s', (total, service['id']))
+        cursor.execute('UPDATE account_services SET amount = %s WHERE id = %s', (amount, service['id']))
         conn.commit()
 
 
@@ -182,10 +165,7 @@ def lambda_handler(event, context):
         if len(cntr_based_services) > 0:
             update_cntr_services_g1(cursor, conn, cntr_based_services, account)
     elif account['cntr_endpoint'] in CONNECTOR_GROUP_2:
-        update_cntr_services_g2(cursor, conn, cntr_based_services, account)
-
-    if len(manual_services) > 0:
-        update_manual_services(cursor, conn, manual_services)
+        update_cntr_services_g2(cursor, conn, cntr_based_services, account)    
 
     if len(percent_based_services) > 0:
         update_percent_services(cursor, conn, percent_based_services)
