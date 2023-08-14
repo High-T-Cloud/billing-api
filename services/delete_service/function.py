@@ -7,13 +7,13 @@ def lambda_handler(event, context):
     conn = utils.get_db_connection(environ['DB_ENDPOINT'], environ['DB_NAME'], environ['SECRET_ARN'])
     cursor = conn.cursor()
     
-    # Role required: Master
-    user_role = utils.get_user_auth(cursor, event, account_id=False, organization_id=6)
-    if int(user_role) != 3:
+    # Auth
+    user_auth = int(utils.get_user_auth(cursor, event, account_id=False, organization_id=6))
+    print('--user auth: ', user_auth)
+    if user_auth != 3:
         conn.close()
         raise Exception('err-401: user access denied')
     
-    # function logic
     
     # Validate service id
     cursor.execute('SELECT id FROM services WHERE id = %s', str(event['service_id']))
@@ -22,6 +22,9 @@ def lambda_handler(event, context):
         conn.close()
         raise Exception('err-400: invalid service id')
     service_id = service_id['id']
+
+    # Cascade - Delete account services connected to this service
+    cursor.execute('DELETE FROM account_services WHERE service_id = %s', event['service_id'])
     
     cursor.execute('DELETE FROM services WHERE id = %s', service_id)
     print('--Deleted service--')

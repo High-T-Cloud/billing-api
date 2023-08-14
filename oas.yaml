@@ -1826,6 +1826,7 @@ paths:
               "discount": "$inputRoot.discount",
               "margin": "$inputRoot.margin",
               "quantity": "$inputRoot.quantity",
+              "hidden": "$inputRoot.hidden",
               "percent_from": "$inputRoot.percent_from",
               "percent_amount": "$inputRoot.percent_amount",
               "payment_source": "$inputRoot.payment_source",
@@ -2231,6 +2232,7 @@ paths:
               "discount": "$inputRoot.discount",              
               "margin": "$inputRoot.margin",              
               "quantity": "$inputRoot.quantity",              
+              "hidden": "$inputRoot.hidden",              
               "percent_from": "$inputRoot.percent_from",              
               "percent_amount": "$inputRoot.percent_amount",              
               "payment_source": "$inputRoot.payment_source",              
@@ -3926,6 +3928,9 @@ components:
         quantity:
           type: number
           minimum: 1
+        hidden:
+          type: boolean
+          default: false
         payment_source:
           type: string
           enum:
@@ -3966,6 +3971,9 @@ components:
         quantity:
           type: number
           minimum: 1
+        hidden:
+          type: boolean
+          default: false
         percent_from:
           type: number
         payment_source:

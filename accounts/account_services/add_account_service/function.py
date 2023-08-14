@@ -44,6 +44,7 @@ def lambda_handler(event, context):
         'quantity': None,
         'discount': None,
         'margin': None,
+        'hidden': None,
         'payment_source': None,
         'payment_source_id': None,
     }

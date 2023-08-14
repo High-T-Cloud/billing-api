@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     # Get all account services For Each account owned by this organizations
     statement = 'SELECT accounts.name, account_number, services.serial, account_services.* FROM accounts '
     statement += 'LEFT JOIN account_services ON account_id = accounts.id LEFT JOIN services ON service_id = services.id '
-    statement += 'WHERE account_services.id IS NOT NULL AND payment_source = %s AND '
+    statement += 'WHERE account_services.id IS NOT NULL AND payment_source = %s AND hidden = false AND '
     statement += acc_statement
 
     statement_params = ['manual'] + accounts_list    
