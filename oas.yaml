@@ -1434,7 +1434,7 @@ paths:
         \ headers"
       x-amazon-apigateway-integration:
         httpMethod: "POST"
-        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-delete-account/invocations"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-delete/invocations"
         responses:
           default:
             statusCode: "200"
@@ -1549,7 +1549,7 @@ paths:
         \ and headers"
       x-amazon-apigateway-integration:
         httpMethod: "POST"
-        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-update-account/invocations"
+        uri: "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:754084371841:function:accounts-update/invocations"
         responses:
           default:
             statusCode: "200"
@@ -2863,7 +2863,7 @@ paths:
                 "serial"  : "$inputRoot.serial",
                 "description": "$inputRoot.description",
                 "currency"  : "$inputRoot.currency",
-                "value"  : "$inputRoot.value",
+                "amount"  : "$inputRoot.amount",
                 "data_source": "$inputRoot.data_source"
               } 
 
@@ -3070,7 +3070,7 @@ paths:
                 "serial"  : "$inputRoot.serial",
                 "description": "$inputRoot.description",
                 "currency"  : "$inputRoot.currency",
-                "value"  : "$inputRoot.value",
+                "amount"  : "$inputRoot.amount",
                 "data_source": "$inputRoot.data_source"
               } 
         responses:
